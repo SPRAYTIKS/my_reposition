@@ -21,7 +21,7 @@ pygame.init()
 
 if __name__ == "__main__":
     pygame.init()
-    size = width, height = 1280, 800
+    size = width, height = 1429, 800
     screen = pygame.display.set_mode(size)
     intro_text = ["Приветствую тебя, новобранец, ты попал в Battle of Heroes", "", "", "",
                   "Правила игры",
