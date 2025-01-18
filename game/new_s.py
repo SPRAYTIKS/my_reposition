@@ -16,10 +16,12 @@ move_scor_2 = False
 BG = (255, 255, 255)
 GRAVITY = 0.35
 BLACK = (0, 0, 0)
+map_image = pygame.image.load('img/les.jpg')
+map_image = pygame.transform.scale(map_image, (1000, 600))
 
 def draw_b():
-    screen.fill(BG)
-    pygame.draw.line(screen, BLACK, (0, 550), (1000, 550))
+    screen.blit(map_image, (0, 0))
+    pygame.draw.line(screen, BLACK, (0, 560), (1000, 560))
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, char_type, x, y, speed, flipik):
@@ -157,8 +159,8 @@ class Player(pygame.sprite.Sprite):
         self.vel += GRAVITY
 
         sy += self.vel
-        if self.rect.bottom + sy > 550:
-            sy = 550 - self.rect.bottom
+        if self.rect.bottom + sy > 560:
+            sy = 560 - self.rect.bottom
             self.in_air = False
         if self.rect.right + sx >= 1100:
             sx = 1000 - self.rect.right
