@@ -209,14 +209,14 @@ while running:
     if player.alive:
         if player.in_air:
             player.update_action(3)
+        elif player.ability:
+            player.update_action(6)
         elif (move_left or move_right) and move_scor and not player.ability:
             player.update_action(2)
         elif move_left or move_right and not player.ability:
             player.update_action(1)
         elif player.atacks:
             player.update_action(player.nums)
-        elif player.ability:
-            player.update_action(6)
         elif player.death:
             player.update_action(7)
         elif not player.hurting:
