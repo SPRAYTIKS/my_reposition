@@ -33,6 +33,7 @@ class Player(pygame.sprite.Sprite):
         self.direction = 1
         self.flip = flipik
         self.ability = False
+        self.dethent = False
         self.jump = False
         self.hurting = True
         self.in_air = True
@@ -41,7 +42,7 @@ class Player(pygame.sprite.Sprite):
         self.death = False
         self.atacks = False
         self.swing = False
-        self.stamina = 100
+        self.stamina = 10000
         self.animation = []
         self.index = 0
         self.action = 0
@@ -128,8 +129,13 @@ class Player(pygame.sprite.Sprite):
         if self.rect.bottom + sy > 550:
             sy = 550 - self.rect.bottom
             self.in_air = False
+        if self.rect.right + sx >= 1100:
+            sx = 1000 - self.rect.right
+        elif self.rect.left + sx <= -100:
+            sx = 0 + self.rect.left
+        else:
+            self.rect.x += sx
 
-        self.rect.x += sx
         self.rect.y += sy
 
 
@@ -195,20 +201,22 @@ while running:
     player2.abilitys()
     player.attack()
     player2.attack()
-    player.dead()
-    player2.dead()
+    if not player.dethent:
+        player.dead()
+    if not player.dethent:
+        player2.dead()
 
     if player.alive:
         if player.in_air:
             player.update_action(3)
-        elif player.ability:
-            player.update_action(6)
         elif (move_left or move_right) and move_scor and not player.ability:
             player.update_action(2)
         elif move_left or move_right and not player.ability:
             player.update_action(1)
         elif player.atacks:
             player.update_action(player.nums)
+        elif player.ability:
+            player.update_action(6)
         elif player.death:
             player.update_action(7)
         elif not player.hurting:
@@ -256,10 +264,10 @@ while running:
                 running = False
             if event.key == pygame.K_w and player.alive:
                 player.jump = True
-            if event.key == pygame.K_r and player.stamina > 10:
+            if event.key == pygame.K_r and player.stamina > 10 and not player.in_air:
                 player.swing = True
                 player.atacks = True
-            if event.key == pygame.K_f and player.stamina > 10:
+            if event.key == pygame.K_f and player.stamina > 10 and not player.in_air:
                 player.swing = True
                 player.ability = True
 
@@ -274,10 +282,10 @@ while running:
                 move_scor_2 = True
             if event.key == pygame.K_i and player2.alive:
                 player2.jump = True
-            if event.key == pygame.K_o and player.stamina > 10:
+            if event.key == pygame.K_o and player.stamina > 10 and not player2.in_air:
                 player2.swing = True
                 player2.atacks = True
-            if event.key == pygame.K_p and player.stamina > 10:
+            if event.key == pygame.K_p and player.stamina > 10 and not player2.in_air:
                 player2.swing = True
                 player2.ability = True
 
