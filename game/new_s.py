@@ -28,7 +28,7 @@ class Player(pygame.sprite.Sprite):
         self.alive = True
         self.vel = 0
         self.hp = 100
-        self.nums = random.randint(4, 5)
+        self.nums = 0
         self.char_type = char_type
         self.direction = 1
         self.flip = flipik
@@ -44,18 +44,31 @@ class Player(pygame.sprite.Sprite):
         self.swing = False
         self.stamina = 10000
         self.animation = []
+        self.abil_krit = False
+        self.abil_helth = False
+        self.abili_thrower = False
         self.index = 0
         self.action = 0
         self.up_time = pygame.time.get_ticks()
+        if self.char_type == 'Samurai_Archer':
+            anim_type = ['Idle', 'Walk', 'Run', 'Jump', 'Attack_1', 'Attack_2', 'Attack_3', 'Dead', 'Hurt', 'Attack_4']
+        else:
+            anim_type = ['Idle', 'Walk', 'Run', 'Jump', 'Attack_1', 'Attack_2', 'Attack_3', 'Dead', 'Hurt']
 
-        anim_type = ['Idle', 'Walk', 'Run', 'Jump', 'Attack_1', 'Attack_2', 'Attack_3', 'Dead', 'Hurt']
+        if char_type in ['Fighter', 'Samurai', 'Shinobi']:
+            sow = 2
+        elif char_type == 'Samurai_Archer':
+            sow = 2.2
+        else:
+            sow = 2.5
+
 
         for anim in anim_type:
             temp = []
             num_files = len(os.listdir(f'img/{char_type}/{anim}.png'))
             for i in range(1, num_files + 1):
                 img = pygame.image.load(f'img/{char_type}/{anim}.png/{i}.png')
-                img = pygame.transform.scale(img, (int(img.get_width() * 2), int(img.get_height() * 2)))
+                img = pygame.transform.scale(img, (int(img.get_width() * sow), int(img.get_height() * sow)))
                 temp.append(img)
             self.animation.append(temp)
 
@@ -78,18 +91,36 @@ class Player(pygame.sprite.Sprite):
                 player.hp -= random.randint(5, 8)
 
     def abilitys(self):
-        if player.ability and player.swing and player2.hurting:
-            player.swing = False
-            player.stamina -= 25
-            if pygame.sprite.collide_mask(player, player2):
-                player2.hp -= random.choice([35, 5, 33, 3, 4, 6])
-                player2.hurting = False
-        if player2.ability and player2.swing and player.hurting:
-            player2.swing = False
-            player2.stamina -= 25
-            if pygame.sprite.collide_mask(player, player2):
-                player.hurting = False
-                player.hp -= random.choice([35, 5, 33, 3, 4, 6])
+        if player.abil_krit:
+            if player.ability and player.swing and player2.hurting:
+                player.swing = False
+                player.stamina -= 25
+                if pygame.sprite.collide_mask(player, player2):
+                    player2.hp -= random.choice([35, 5, 33, 3, 4, 6])
+                    player2.hurting = False
+        if player2.abil_krit:
+            if player2.ability and player2.swing and player.hurting:
+                player2.swing = False
+                player2.stamina -= 25
+                if pygame.sprite.collide_mask(player, player2):
+                    player.hurting = False
+                    player.hp -= random.choice([35, 5, 33, 3, 4, 6])
+        if player.abil_helth:
+            if player.ability and player.swing:
+                player.swing = False
+                player.stamina -= 30
+                if player.hp <= 100:
+                    player.hp += random.choice([35, 20, 33, 25, 24, 28])
+                else:
+                    player.hp = 100
+        if player2.abil_helth:
+            if player2.ability and player2.swing:
+                player2.swing = False
+                player2.stamina -= 30
+                if player2.hp <= 100:
+                    player2.hp += random.choice([35, 20, 33, 25, 24, 28])
+                else:
+                    player2.hp = 100
 
     def dead(self):
         if player.hp <= 0:
@@ -182,8 +213,32 @@ class Player(pygame.sprite.Sprite):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
 
-player = Player('Fighter', 100, 450, 5, False)
-player2 = Player('Fighter', 900, 450, 5, True)
+player = Player('Samurai_Archer', 100, 450, 5, False)
+player2 = Player('Shinobi', 900, 450, 5, True)
+
+if player.char_type == 'Samurai_Archer':
+    player.nums = random.choice([4, 5, 9])
+else:
+    player.nums = random.choice([4, 5])
+
+if player2.char_type == 'Samurai_Archer':
+    player2.nums = random.choice([4, 5, 9])
+else:
+    player2.nums = random.choice([4, 5])
+
+
+if player.char_type in ['Fighter', 'Samurai', 'Samurai_comander', 'Shinobi']:
+    player.abil_krit = True
+elif player.char_type in ['Fire vizard', 'Lightning Mage', 'Ninja_Monk', 'Samurai_Archer']:
+    player.abili_thrower = True
+elif player.char_type in ['Kunoichi']:
+    player.abil_helth = True
+if player2.char_type in ['Fighter', 'Samurai', 'Samurai_comander', 'Shinobi']:
+    player2.abil_krit = True
+elif player2.char_type in ['Fire vizard', 'Lightning Mage', 'Ninja_Monk', 'Samurai_Archer']:
+    player2.abili_thrower = True
+elif player2.char_type in ['Kunoichi']:
+    player2.abil_helth = True
 
 clock = pygame.time.Clock()
 FPS = 60
