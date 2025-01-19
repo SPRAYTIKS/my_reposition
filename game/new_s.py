@@ -2,10 +2,11 @@ import pygame
 import random
 import os
 
-
 pygame.init()
+pygame.font.init()
 
 screen = pygame.display.set_mode((1000, 600))
+
 
 move_left = False
 move_right = False
@@ -13,23 +14,112 @@ move_scor = False
 move_left_2 = False
 move_right_2 = False
 move_scor_2 = False
-BG = (255, 255, 255)
+rouds = 1
+WHITE = (255, 255, 255)
 GRAVITY = 0.35
 BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+YELOW = (255, 255, 0)
+BLUES = (0, 0, 255)
 map_image = pygame.image.load('img/les.jpg')
 map_image = pygame.transform.scale(map_image, (1000, 600))
 
+
+
+
+
+
 def draw_b():
     screen.blit(map_image, (0, 0))
-    pygame.draw.line(screen, BLACK, (0, 560), (1000, 560))
+
+
+def draw_text(text, text_col, x, y, size):
+    img = pygame.font.Font('font/batle.ttf', size)
+    img = img.render(text, True, text_col)
+    screen.blit(img, (x, y))
+
+def status_bar():
+    if player2.hp >= 100:
+        player2.hp = 100
+    if player.hp >= 100:
+        player.hp = 100
+    if player.in_air:
+        player.stamina -= 0.2
+    if player2.in_air:
+        player2.stamina -= 0.2
+
+
+    if player.stamina < 0:
+        player.stamina = 0
+    if player2.stamina < 0:
+        player2.stamina = 0
+
+    if player.stamina <= 100:
+        player.stamina += 0.05
+    if player2.stamina <= 100:
+        player2.stamina += 0.05
+
+
+def restart_game():
+    global time, time2, move_left, move_right, \
+        move_scor, move_left_2, move_right_2, move_scor_2
+    player.stamina = 100
+    player2.stamina = 100
+    player.hp = 100
+    player2.hp = 100
+    time = 5000
+    time2 = 200
+    player.rect.center = (100, 450)
+    player2.rect.center = (900, 450)
+    player.dethent = False
+    player2.dethent = False
+    move_left = False
+    move_right = False
+    move_scor = False
+    move_left_2 = False
+    move_right_2 = False
+    move_scor_2 = False
+
+
+def game_rounds():
+    global running
+
+    pygame.draw.circle(screen, WHITE, (35, 80), 10)
+    pygame.draw.circle(screen, WHITE, (63, 80), 10)
+
+    pygame.draw.circle(screen, WHITE, (935, 80), 10)
+    pygame.draw.circle(screen, WHITE, (963, 80), 10)
+
+    if player.round == 1:
+        pygame.draw.circle(screen, YELOW, (35, 80), 8)
+    if player.round == 2:
+        pygame.draw.circle(screen, YELOW, (35, 80), 8)
+        pygame.draw.circle(screen, YELOW, (63, 80), 8)
+
+    if player2.round == 1:
+        pygame.draw.circle(screen, YELOW, (963, 80), 8)
+    if player2.round == 2:
+        pygame.draw.circle(screen, YELOW, (935, 80), 8)
+        pygame.draw.circle(screen, YELOW, (963, 80), 8)
+
+
+    if player.round == 2:
+        running = False
+    if player2.round == 2:
+        running = False
+
+
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, char_type, x, y, speed, flipik):
+    def __init__(self, char_type, x, y, speed, flipik, id):
         pygame.sprite.Sprite.__init__(self)
         self.speed = speed
         self.alive = True
+        self.coldown = 0
         self.vel = 0
         self.hp = 100
+        self.round = 0
         self.nums = 0
         self.char_type = char_type
         self.direction = 1
@@ -37,6 +127,7 @@ class Player(pygame.sprite.Sprite):
         self.ability = False
         self.dethent = False
         self.jump = False
+        self.id = id
         self.hurting = True
         self.in_air = True
         self.runs = False
@@ -44,13 +135,16 @@ class Player(pygame.sprite.Sprite):
         self.death = False
         self.atacks = False
         self.swing = False
-        self.stamina = 10000
+        self.stamina = 100
         self.animation = []
         self.abil_krit = False
+        self.indexis = 0
+        self.indexis2 = 0
         self.abil_helth = False
         self.abili_thrower = False
         self.index = 0
         self.action = 0
+        self.sets = False
         self.up_time = pygame.time.get_ticks()
         if self.char_type == 'Samurai_Archer':
             anim_type = ['Idle', 'Walk', 'Run', 'Jump', 'Attack_1', 'Attack_2', 'Attack_3', 'Dead', 'Hurt', 'Attack_4']
@@ -69,7 +163,7 @@ class Player(pygame.sprite.Sprite):
             temp = []
             num_files = len(os.listdir(f'img/{char_type}/{anim}.png'))
             for i in range(1, num_files + 1):
-                img = pygame.image.load(f'img/{char_type}/{anim}.png/{i}.png')
+                img = pygame.image.load(f'img/{char_type}/{anim}.png/{i}.png').convert_alpha()
                 img = pygame.transform.scale(img, (int(img.get_width() * sow), int(img.get_height() * sow)))
                 temp.append(img)
             self.animation.append(temp)
@@ -124,11 +218,46 @@ class Player(pygame.sprite.Sprite):
                 else:
                     player2.hp = 100
 
+
+    def draw_health_bar(self, health, x, y):
+        ratio = health / 100
+        pygame.draw.rect(screen, YELOW, (x - 2, y - 2, 404, 29))
+        pygame.draw.rect(screen, RED, (x, y, 400, 25))
+        pygame.draw.rect(screen, GREEN, (x, y, 400 * ratio, 25))
+
+    def draw_stamina_bar(self, stamina, x, y):
+        stam = stamina / 100
+        pygame.draw.rect(screen, WHITE, (x - 2, y - 2, 404, 12))
+        pygame.draw.rect(screen, BLUES, (x, y, 400 * stam, 8))
+
+
     def dead(self):
         if player.hp <= 0:
-            player.death = True
+            FLIPPER = 150
+            player.image = player.animation[7][player.indexis - 1]
+            if player.indexis == len(player.animation[7]):
+                player.image = player.animation[7][player.indexis - 1]
+            elif pygame.time.get_ticks() - player.up_time > FLIPPER :
+                player.up_time = pygame.time.get_ticks()
+                player.indexis += 1
+            player.dethent = True
+
+
         if player2.hp <= 0:
-            player2.death = True
+            FLIPPER = 150
+            player2.image = player2.animation[7][player2.indexis - 1]
+            if player2.indexis == len(player2.animation[7]):
+                player2.image = player2.animation[7][player2.indexis - 1]
+            elif pygame.time.get_ticks() - player2.up_time > FLIPPER:
+                player2.up_time = pygame.time.get_ticks()
+                player2.indexis += 1
+            player2.dethent = True
+
+    def update(self):
+        self.update_anim()
+        if self.coldown > 0:
+            self.coldown -= 1
+
 
     def move(self, moving_left, moving_right, move_scor):
         sx = 0
@@ -150,8 +279,6 @@ class Player(pygame.sprite.Sprite):
             self.flip = False
             self.direction = 1
         if self.jump and self.in_air == False:
-            player.stamina -= 15
-            player2.stamina -= 15
             self.vel = -11
             self.jump = False
             self.in_air = True
@@ -183,25 +310,40 @@ class Player(pygame.sprite.Sprite):
                 self.index = 0
         elif self.ability:
             if self.index >= len(self.animation[self.action]):
-                self.ability = False
                 player.hurting = True
                 player2.hurting = True
-                print(player.hp, player2.hp)
-                print(player.stamina, player2.stamina)
-                self.index = 0
-        elif self.death:
-            if self.index >= len(self.animation[self.action]):
-                self.death = False
+                if player.ability:
+                    if player.abili_thrower:
+                        player.stamina -= 30
+                        player.shoot()
+                if player2.ability:
+                    if player2.abili_thrower:
+                        player2.stamina -= 30
+                        player2.shoot()
+                self.ability = False
+
                 self.index = 0
         else:
             if self.index >= len(self.animation[self.action]):
                 self.atacks = False
                 player.hurting = True
                 player2.hurting = True
-                print(player.hp, player2.hp)
-                print(player.stamina, player2.stamina)
                 self.nums = random.randint(4, 5)
                 self.index = 0
+
+
+    def shoot(self):
+        if self.coldown == 0:
+            self.coldown = 100
+            if self.id == 0:
+                bulet = Bullet(self.rect.centerx + (0.6 * self.rect.size[0] * self.direction),
+                               self.rect.centery + 30, self.direction)
+                bulet_group.add(bulet)
+            else:
+                bul = Bullet_two(self.rect.centerx + (0.6 * self.rect.size[0] * self.direction),
+                               self.rect.centery + 30, self.direction)
+                bulet_group.add(bul)
+
 
 
     def update_action(self, new_action):
@@ -214,9 +356,70 @@ class Player(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, direction):
+        pygame.sprite.Sprite.__init__(self)
+        self.speed = 10
+        self.index = 0
+        self.image = list_bulet[self.index]
+        self.rect = self.image.get_rect()
+        self.up_time = pygame.time.get_ticks()
+        self.rect.center = (x, y)
+        self.direction = direction
 
-player = Player('Samurai_Archer', 100, 450, 5, False)
-player2 = Player('Shinobi', 900, 450, 5, True)
+    def update(self):
+        FLIPPER = 80
+        self.image = list_bulet[self.index]
+        if pygame.time.get_ticks() - self.up_time > FLIPPER:
+            self.up_time = pygame.time.get_ticks()
+            self.index += 1
+        if self.index >= len(list_bulet):
+            self.index = 0
+        self.rect.x += (self.direction * self.speed)
+        if self.rect.right < 0 or self.rect.left > 1000 - 100:
+            self.kill()
+        if pygame.sprite.spritecollide(player2, bulet_group, False):
+            if player.alive:
+                player2.hp -= random.randint(5, 8)
+                self.kill()
+
+
+
+class Bullet_two(pygame.sprite.Sprite):
+    def __init__(self, x, y, direction):
+        pygame.sprite.Sprite.__init__(self)
+        self.speed = 10
+        self.index_1 = 0
+        self.image = list_bulet_2[self.index_1]
+        self.rect = self.image.get_rect()
+        self.up_time = pygame.time.get_ticks()
+        self.rect.center = (x, y)
+        self.direction = direction
+
+    def update(self):
+        FLIPPER = 80
+        self.image = list_bulet_2[self.index_1]
+        if pygame.time.get_ticks() - self.up_time > FLIPPER:
+            self.up_time = pygame.time.get_ticks()
+            self.index_1 += 1
+        if self.index_1 >= len(list_bulet_2):
+            self.index_1 = 0
+        self.rect.x += (self.direction * self.speed)
+        if self.rect.right < 0 or self.rect.left > 1000 - 100:
+            self.kill()
+        if pygame.sprite.spritecollide(player, bulet_group, False):
+            if player.alive:
+                player.hp -= random.randint(5, 8)
+                self.kill()
+
+
+
+
+bulet_group = pygame.sprite.Group()
+player = Player('Samurai_Archer', 100, 450, 5, False, 0)
+player2 = Player('Fire vizard', 900, 450, 5, True, 1)
+player2.direction = -1
+
 
 if player.char_type == 'Samurai_Archer':
     player.nums = random.choice([4, 5, 9])
@@ -246,131 +449,236 @@ clock = pygame.time.Clock()
 FPS = 60
 x = 200
 y = 200
+time = 5000
+time2 = 200
+
+list_bulet = []
+list_bulet_2 = []
+
+if player.char_type == 'Fire vizard':
+    for i in range(1, 12):
+        img = pygame.image.load(f'img/Fire vizard/bulet.png/{i}.png').convert_alpha()
+        img = pygame.transform.scale(img, (int(img.get_width()), int(img.get_height())))
+        list_bulet.append(img)
+elif player.char_type == 'Lightning Mage':
+    for i in range(1, 10):
+        img = pygame.image.load(f'img/Lightning Mage/bulet.png/{i}.png').convert_alpha()
+        img = pygame.transform.scale(img, (int(img.get_width()), int(img.get_height())))
+        list_bulet.append(img)
+elif player.char_type == 'Ninja_Monk':
+    for i in range(1, 4):
+        img = pygame.image.load(f'img/Ninja_Monk/bulet.png/{i}.png').convert_alpha()
+        img = pygame.transform.scale(img, (int(img.get_width()) * 3, int(img.get_height()) * 3))
+        list_bulet.append(img)
+elif player.char_type == 'Samurai_Archer':
+    img = pygame.image.load('img/Samurai_Archer/bulet.png/1.png').convert_alpha()
+    list_bulet.append(img)
+
+
+
+if player2.char_type == 'Fire vizard':
+    for i in range(1, 12):
+        img = pygame.image.load(f'img/Fire vizard/bulet.png/{i}.png').convert_alpha()
+        img = pygame.transform.scale(img, (int(img.get_width()), int(img.get_height())))
+        img = pygame.transform.flip(img, True, False)
+        list_bulet_2.append(img)
+elif player2.char_type == 'Lightning Mage':
+    for i in range(1, 10):
+        img = pygame.image.load(f'img/Lightning Mage/bulet.png/{i}.png').convert_alpha()
+        img = pygame.transform.scale(img, (int(img.get_width()), int(img.get_height())))
+        img = pygame.transform.flip(img, True, False)
+        list_bulet_2.append(img)
+elif player2.char_type == 'Ninja_Monk':
+    for i in range(1, 4):
+        img = pygame.image.load(f'img/Ninja_Monk/bulet.png/{i}.png').convert_alpha()
+        img = pygame.transform.scale(img, (int(img.get_width()) * 3, int(img.get_height()) * 3))
+        img = pygame.transform.flip(img, True, False)
+        list_bulet_2.append(img)
+elif player2.char_type == 'Samurai_Archer':
+    img = pygame.image.load('img/Samurai_Archer/bulet.png/1.png').convert_alpha()
+    img = pygame.transform.flip(img, True, False)
+    list_bulet_2.append(img)
 
 running = True
 while running:
+    status_bar()
+
     draw_b()
-    player.update_anim()
-    player2.update_anim()
+    player.draw_health_bar(player.hp, 20, 20)
+    player2.draw_health_bar(player2.hp, 580, 20)
+
+    player.draw_stamina_bar(player.stamina, 20, 55)
+    player2.draw_stamina_bar(player2.stamina, 580, 55)
+
+    bulet_group.update()
+    bulet_group.draw(screen)
+
+
     player.draw()
     player2.draw()
-    player.abilitys()
-    player2.abilitys()
-    player.attack()
-    player2.attack()
-    if not player.dethent:
-        player.dead()
-    if not player.dethent:
-        player2.dead()
-
-    if player.alive:
-        if player.in_air:
-            player.update_action(3)
-        elif player.ability:
-            player.update_action(6)
-        elif (move_left or move_right) and move_scor and not player.ability:
-            player.update_action(2)
-        elif move_left or move_right and not player.ability:
-            player.update_action(1)
-        elif player.atacks:
-            player.update_action(player.nums)
-        elif player.death:
-            player.update_action(7)
-        elif not player.hurting:
-            player.update_action(8)
-        else:
-            player.update_action(0)
-        if not player.ability:
-            player.move(move_left, move_right, move_scor)
+    if not (player.dethent or player2.dethent):
+        if time2 < 0 or time2 > 198:
+            player.dead()
+            player2.dead()
+            player.update()
+            player2.update()
+            player.abilitys()
+            player2.abilitys()
+            player.attack()
+            player2.attack()
 
 
-    if player2.alive:
-        if player2.in_air:
-            player2.update_action(3)
-        elif player2.ability:
-            player2.update_action(6)
-        elif (move_left_2 or move_right_2) and move_scor_2 and not player2.ability:
-            player2.update_action(2)
-        elif move_left_2 or move_right_2 and not player2.ability:
-            player2.update_action(1)
-        elif player2.atacks:
-            player2.update_action(player2.nums)
-        elif player2.death:
-            player2.update_action(7)
-        elif not player2.hurting:
-            player2.update_action(8)
-        else:
-            player2.update_action(0)
-        if not player2.ability:
-            player2.move(move_left_2, move_right_2, move_scor_2)
+            if player.alive:
+                if player.in_air:
+                    player.update_action(3)
+                elif player.ability:
+                    player.update_action(6)
+                elif (move_left or move_right) and move_scor and not player.ability:
+                    player.update_action(2)
+                elif move_left or move_right and not player.ability:
+                    player.update_action(1)
+                elif player.atacks:
+                    player.update_action(player.nums)
+                elif not player.hurting:
+                    player.update_action(8)
+                else:
+                    player.update_action(0)
+                if not player.ability:
+                    player.move(move_left, move_right, move_scor)
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            keys = pygame.key.get_pressed()
-            if event.key == pygame.K_a:
-                move_left = True
-            if event.key == pygame.K_d:
-                move_right = True
-            if move_left and keys[pygame.K_LSHIFT]:
-                move_scor = True
-            if move_right and keys[pygame.K_LSHIFT]:
-                move_scor = True
-            if event.key == pygame.K_ESCAPE:
+
+            if player2.alive:
+                if player2.in_air:
+                    player2.update_action(3)
+                elif player2.ability:
+                    player2.update_action(6)
+                elif (move_left_2 or move_right_2) and move_scor_2 and not player2.ability:
+                    player2.update_action(2)
+                elif move_left_2 or move_right_2 and not player2.ability:
+                    player2.update_action(1)
+                elif player2.atacks:
+                    player2.update_action(player2.nums)
+                elif not player2.hurting:
+                    player2.update_action(8)
+                else:
+                    player2.update_action(0)
+                if not player2.ability:
+                    player2.move(move_left_2, move_right_2, move_scor_2)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 running = False
-            if event.key == pygame.K_w and player.alive:
-                player.jump = True
-            if event.key == pygame.K_r and player.stamina > 10 and not player.in_air:
-                player.swing = True
-                player.atacks = True
-            if event.key == pygame.K_f and player.stamina > 10 and not player.in_air:
-                player.swing = True
-                player.ability = True
+            if time2 < 0 or time2 > 198:
+                if event.type == pygame.KEYDOWN:
+                    keys = pygame.key.get_pressed()
+                    if event.key == pygame.K_a:
+                        move_left = True
+                    if event.key == pygame.K_d:
+                        move_right = True
+                    if move_left and keys[pygame.K_LSHIFT]:
+                        move_scor = True
+                    if move_right and keys[pygame.K_LSHIFT]:
+                        move_scor = True
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
+                    if event.key == pygame.K_w and player.alive and player.stamina > 5:
+                        player.jump = True
+                    if event.key == pygame.K_r and player.stamina > 10 and not player.in_air:
+                        player.swing = True
+                        player.atacks = True
+                    if event.key == pygame.K_f and player.stamina > 10 and not player.in_air:
+                        player.swing = True
+                        player.ability = True
 
 
-            if event.key == pygame.K_j:
-                move_left_2 = True
-            if event.key == pygame.K_l:
-                move_right_2 = True
-            if keys[pygame.K_RSHIFT] and move_left_2:
-                move_scor_2 = True
-            if keys[pygame.K_RSHIFT] and move_right_2:
-                move_scor_2 = True
-            if event.key == pygame.K_i and player2.alive:
-                player2.jump = True
-            if event.key == pygame.K_o and player.stamina > 10 and not player2.in_air:
-                player2.swing = True
-                player2.atacks = True
-            if event.key == pygame.K_p and player.stamina > 10 and not player2.in_air:
-                player2.swing = True
-                player2.ability = True
+                    if event.key == pygame.K_j:
+                        move_left_2 = True
+                    if event.key == pygame.K_l:
+                        move_right_2 = True
+                    if keys[pygame.K_RSHIFT] and move_left_2:
+                        move_scor_2 = True
+                    if keys[pygame.K_RSHIFT] and move_right_2:
+                        move_scor_2 = True
+                    if event.key == pygame.K_i and player2.alive and player2.stamina > 5:
+                        player2.jump = True
+                    if event.key == pygame.K_o and player2.stamina > 10 and not player2.in_air:
+                        player2.swing = True
+                        player2.atacks = True
+                    if event.key == pygame.K_p and player2.stamina > 10 and not player2.in_air:
+                        player2.swing = True
+                        player2.ability = True
 
+                if event.type == pygame.KEYUP:
+                    keys = pygame.key.get_pressed()
+                    if event.key == pygame.K_a:
+                        move_left = False
+                    if event.key == pygame.K_d:
+                        move_right = False
+                    if not(keys[pygame.K_LSHIFT] and move_left):
+                        move_scor = False
+                    if not(keys[pygame.K_LSHIFT] and move_right):
+                        move_scor = False
 
+                    if event.key == pygame.K_j:
+                        move_left_2 = False
+                    if event.key == pygame.K_l:
+                        move_right_2 = False
+                    if not(keys[pygame.K_RSHIFT] and move_left_2):
+                        move_scor_2 = False
+                    if not(keys[pygame.K_RSHIFT] and move_right_2):
+                        move_scor_2 = False
+        if time2 > 0:
+            if time // 4000 == 1:
+                draw_text("01:" + str(time % 3600 // 60), RED, 468, 18, 35)
+                if str(time2 % 3600 // 60) == '0':
+                    draw_text(f'Round {rouds}', YELOW, 420, 200, 70)
+                else:
+                    draw_text(str(time2 % 3600 // 60), YELOW, 490, 200, 80)
+                time2 -= 1
+        if time2 < 0:
+            if time // 3600 == 1:
+                if time % 3600 // 60 < 10:
+                    draw_text("01:0"+ str(time % 3600 // 60), RED, 468, 18, 35)
+                else:
+                    draw_text("01:"+ str(time % 3600 // 60), RED, 468, 18, 35)
+            else:
+                if time % 3600 // 60 < 10:
+                    draw_text("00:0"+ str(time % 3600 // 60), RED, 468, 18, 35)
+                else:
+                    draw_text("00:"+ str(time % 3600 // 60), RED, 468, 18, 35)
+        if time == 0:
+            player.dethent = True
+            player2.dethent = True
+            player.round += 1
+            player2.round += 1
+        time = time - 1
+        time2 -= 1
 
-        if event.type == pygame.KEYUP:
-            keys = pygame.key.get_pressed()
-            if event.key == pygame.K_a:
-                move_left = False
-            if event.key == pygame.K_d:
-                move_right = False
-            if not(keys[pygame.K_LSHIFT] and move_left):
-                move_scor = False
-            if not(keys[pygame.K_LSHIFT] and move_right):
-                move_scor = False
+        player.dead()
+    else:
+        if player.hp <= 0:
+            player2.round += 1
+        if player2.hp <= 0:
+            player.round += 1
 
-            if event.key == pygame.K_j:
-                move_left_2 = False
-            if event.key == pygame.K_l:
-                move_right_2 = False
-            if not(keys[pygame.K_RSHIFT] and move_left_2):
-                move_scor_2 = False
-            if not(keys[pygame.K_RSHIFT] and move_right_2):
-                move_scor_2 = False
+        rouds += 1
+        restart_game()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
+    if '_' in player.char_type:
+        name = player.char_type.replace('_', ' ')
+    else:
+        name = player.char_type
+    draw_text(name, YELOW, 30, 12, 35)
+    if '_' in player2.char_type:
+        name1 = player2.char_type.replace('_', ' ')
+    else:
+        name1 = player2.char_type
+    draw_text(name1, YELOW, 590, 12, 35)
 
-
-
+    game_rounds()
     pygame.display.flip()
     clock.tick(FPS)
 
