@@ -16,7 +16,7 @@ move_right_2 = False
 move_scor_2 = False
 rouds = 1
 WHITE = (255, 255, 255)
-GRAVITY = 0.35
+GRAVITY = 0.25
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -45,9 +45,9 @@ def status_bar():
     if player.hp >= 100:
         player.hp = 100
     if player.in_air:
-        player.stamina -= 0.2
+        player.stamina -= 0.15
     if player2.in_air:
-        player2.stamina -= 0.2
+        player2.stamina -= 0.15
 
 
     if player.stamina < 0:
@@ -56,9 +56,9 @@ def status_bar():
         player2.stamina = 0
 
     if player.stamina <= 100:
-        player.stamina += 0.05
+        player.stamina += 0.07
     if player2.stamina <= 100:
-        player2.stamina += 0.05
+        player2.stamina += 0.07
 
 
 def restart_game():
@@ -175,46 +175,64 @@ class Player(pygame.sprite.Sprite):
     def attack(self):
         if player.atacks and player.swing and player2.hurting:
             player.swing = False
-            player.stamina -= 10
+            player.stamina -= 5
             if pygame.sprite.collide_mask(player, player2):
+                if random.randint(1, 2) == 1:
+                    sound_attack_1.play()
+                else:
+                    sound_attack_2.play()
                 player2.hurting = False
-                player2.hp -= random.randint(5, 8)
+                player2.hp -= random.randint(4, 8)
+            else:
+                sound_promax.play()
         if player2.atacks and player2.swing and player.hurting:
             player2.swing = False
-            player2.stamina -= 10
+            player2.stamina -= 5
             if pygame.sprite.collide_mask(player, player2):
+                if random.randint(1, 2) == 1:
+                    sound_attack_1p.play()
+                else:
+                    sound_attack_2p.play()
                 player.hurting = False
-                player.hp -= random.randint(5, 8)
+                player.hp -= random.randint(4, 8)
+            else:
+                sound_promaxp.play()
 
     def abilitys(self):
         if player.abil_krit:
             if player.ability and player.swing and player2.hurting:
                 player.swing = False
-                player.stamina -= 25
+                player.stamina -= 20
                 if pygame.sprite.collide_mask(player, player2):
-                    player2.hp -= random.choice([35, 5, 33, 3, 4, 6])
+                    sound_attack_3.play()
+                    player2.hp -= random.choice([35, 5, 33, 3, 4, 6, 35, 40])
                     player2.hurting = False
+                else:
+                    sound_promax.play()
         if player2.abil_krit:
             if player2.ability and player2.swing and player.hurting:
                 player2.swing = False
-                player2.stamina -= 25
+                player2.stamina -= 20
                 if pygame.sprite.collide_mask(player, player2):
+                    sound_attack_3p.play()
                     player.hurting = False
-                    player.hp -= random.choice([35, 5, 33, 3, 4, 6])
+                    player.hp -= random.choice([35, 5, 33, 3, 4, 6, 35, 40])
+                else:
+                    sound_promaxp.play()
         if player.abil_helth:
             if player.ability and player.swing:
                 player.swing = False
-                player.stamina -= 30
+                player.stamina -= 50
                 if player.hp <= 100:
-                    player.hp += random.choice([35, 20, 33, 25, 24, 28])
+                    player.hp += random.choice([35, 20, 33, 25, 24, 28, 50, 20, 21])
                 else:
                     player.hp = 100
         if player2.abil_helth:
             if player2.ability and player2.swing:
                 player2.swing = False
-                player2.stamina -= 30
+                player2.stamina -= 50
                 if player2.hp <= 100:
-                    player2.hp += random.choice([35, 20, 33, 25, 24, 28])
+                    player2.hp += random.choice([35, 20, 33, 25, 24, 28, 50, 20, 21])
                 else:
                     player2.hp = 100
 
@@ -314,11 +332,11 @@ class Player(pygame.sprite.Sprite):
                 player2.hurting = True
                 if player.ability:
                     if player.abili_thrower:
-                        player.stamina -= 30
+                        player.stamina -= 15
                         player.shoot()
                 if player2.ability:
                     if player2.abili_thrower:
-                        player2.stamina -= 30
+                        player2.stamina -= 15
                         player2.shoot()
                 self.ability = False
 
@@ -334,7 +352,7 @@ class Player(pygame.sprite.Sprite):
 
     def shoot(self):
         if self.coldown == 0:
-            self.coldown = 100
+            self.coldown = 40
             if self.id == 0:
                 bulet = Bullet(self.rect.centerx + (0.6 * self.rect.size[0] * self.direction),
                                self.rect.centery + 30, self.direction)
@@ -380,7 +398,7 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
         if pygame.sprite.spritecollide(player2, bulet_group, False):
             if player.alive:
-                player2.hp -= random.randint(5, 8)
+                player2.hp -= random.randint(5, 20)
                 self.kill()
 
 
@@ -409,16 +427,28 @@ class Bullet_two(pygame.sprite.Sprite):
             self.kill()
         if pygame.sprite.spritecollide(player, bulet_group, False):
             if player.alive:
-                player.hp -= random.randint(5, 8)
+                player.hp -= random.randint(5, 20)
                 self.kill()
 
 
 
 
 bulet_group = pygame.sprite.Group()
-player = Player('Samurai_Archer', 100, 450, 5, False, 0)
-player2 = Player('Fire vizard', 900, 450, 5, True, 1)
+player = Player('Fighter', 100, 450, 5, False, 0)
+player2 = Player('Fighter', 900, 450, 5, True, 1)
 player2.direction = -1
+
+if player.char_type == 'Fighter':
+    sound_attack_1 = pygame.mixer.Sound('sounds/attack_rukoi_1.mp3')
+    sound_attack_2 = pygame.mixer.Sound('sounds/attack_rukoi_2.mp3')
+    sound_attack_3 = pygame.mixer.Sound('sounds/attack_noga.mp3')
+    sound_promax = pygame.mixer.Sound('sounds/promax.mp3')
+if player2.char_type == 'Fighter':
+    sound_attack_1p = pygame.mixer.Sound('sounds/attack_rukoi_1.mp3')
+    sound_attack_2p = pygame.mixer.Sound('sounds/attack_rukoi_2.mp3')
+    sound_attack_3p = pygame.mixer.Sound('sounds/attack_noga.mp3')
+    sound_promaxp = pygame.mixer.Sound('sounds/promax.mp3')
+
 
 
 if player.char_type == 'Samurai_Archer':
@@ -458,20 +488,24 @@ list_bulet_2 = []
 if player.char_type == 'Fire vizard':
     for i in range(1, 12):
         img = pygame.image.load(f'img/Fire vizard/bulet.png/{i}.png').convert_alpha()
+        img = pygame.transform.scale(img, (200, 200))
         img = pygame.transform.scale(img, (int(img.get_width()), int(img.get_height())))
         list_bulet.append(img)
 elif player.char_type == 'Lightning Mage':
     for i in range(1, 10):
         img = pygame.image.load(f'img/Lightning Mage/bulet.png/{i}.png').convert_alpha()
+        img = pygame.transform.scale(img, (200, 200))
         img = pygame.transform.scale(img, (int(img.get_width()), int(img.get_height())))
         list_bulet.append(img)
 elif player.char_type == 'Ninja_Monk':
     for i in range(1, 4):
         img = pygame.image.load(f'img/Ninja_Monk/bulet.png/{i}.png').convert_alpha()
+        img = pygame.transform.scale(img, (20, 20))
         img = pygame.transform.scale(img, (int(img.get_width()) * 3, int(img.get_height()) * 3))
         list_bulet.append(img)
 elif player.char_type == 'Samurai_Archer':
     img = pygame.image.load('img/Samurai_Archer/bulet.png/1.png').convert_alpha()
+    img = pygame.transform.scale(img, (100, 100))
     list_bulet.append(img)
 
 
@@ -480,22 +514,26 @@ if player2.char_type == 'Fire vizard':
     for i in range(1, 12):
         img = pygame.image.load(f'img/Fire vizard/bulet.png/{i}.png').convert_alpha()
         img = pygame.transform.scale(img, (int(img.get_width()), int(img.get_height())))
+        img = pygame.transform.scale(img, (200, 200))
         img = pygame.transform.flip(img, True, False)
         list_bulet_2.append(img)
 elif player2.char_type == 'Lightning Mage':
     for i in range(1, 10):
         img = pygame.image.load(f'img/Lightning Mage/bulet.png/{i}.png').convert_alpha()
         img = pygame.transform.scale(img, (int(img.get_width()), int(img.get_height())))
+        img = pygame.transform.scale(img, (200, 200))
         img = pygame.transform.flip(img, True, False)
         list_bulet_2.append(img)
 elif player2.char_type == 'Ninja_Monk':
     for i in range(1, 4):
         img = pygame.image.load(f'img/Ninja_Monk/bulet.png/{i}.png').convert_alpha()
         img = pygame.transform.scale(img, (int(img.get_width()) * 3, int(img.get_height()) * 3))
+        img = pygame.transform.scale(img, (20, 20))
         img = pygame.transform.flip(img, True, False)
         list_bulet_2.append(img)
 elif player2.char_type == 'Samurai_Archer':
     img = pygame.image.load('img/Samurai_Archer/bulet.png/1.png').convert_alpha()
+    img = pygame.transform.scale(img, (100, 100))
     img = pygame.transform.flip(img, True, False)
     list_bulet_2.append(img)
 
