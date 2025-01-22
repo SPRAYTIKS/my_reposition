@@ -70,6 +70,7 @@ def restart_game():
     player2.hp = 100
     time = 5000
     time2 = 200
+    time3 = 5000
     player.rect.center = (100, 450)
     player2.rect.center = (900, 450)
     player.dethent = False
@@ -135,6 +136,7 @@ class Player(pygame.sprite.Sprite):
         self.death = False
         self.atacks = False
         self.swing = False
+        self.charge = False
         self.stamina = 100
         self.animation = []
         self.abil_krit = False
@@ -223,6 +225,7 @@ class Player(pygame.sprite.Sprite):
             if player.ability and player.swing:
                 player.swing = False
                 player.stamina -= 50
+                sound_attack_3.play()
                 if player.hp <= 100:
                     player.hp += random.choice([35, 20, 33, 25, 24, 28, 50, 20, 21])
                 else:
@@ -231,6 +234,7 @@ class Player(pygame.sprite.Sprite):
             if player2.ability and player2.swing:
                 player2.swing = False
                 player2.stamina -= 50
+                sound_attack_3p.play()
                 if player2.hp <= 100:
                     player2.hp += random.choice([35, 20, 33, 25, 24, 28, 50, 20, 21])
                 else:
@@ -283,8 +287,12 @@ class Player(pygame.sprite.Sprite):
         if moving_left:
             sx = -self.speed
             self.flip = True
+            if time % random.randint(40, 48)  == 1:
+                walk.play()
             self.direction = -1
         if moving_left and move_scor:
+            if time % random.randint(20, 35)  == 1:
+                walk.play()
             sx = -(self.speed + 4)
             self.flip = True
             self.direction = -1
@@ -292,7 +300,11 @@ class Player(pygame.sprite.Sprite):
             sx = self.speed
             self.flip = False
             self.direction = 1
+            if time % random.randint(40, 48)  == 1:
+                walk.play()
         if moving_right and move_scor:
+            if time % random.randint(20, 35) == 1:
+                walk.play()
             sx = self.speed + 4
             self.flip = False
             self.direction = 1
@@ -301,7 +313,9 @@ class Player(pygame.sprite.Sprite):
             self.jump = False
             self.in_air = True
 
+
         self.vel += GRAVITY
+
 
         sy += self.vel
         if self.rect.bottom + sy > 560:
@@ -327,16 +341,24 @@ class Player(pygame.sprite.Sprite):
             if self.index >= len(self.animation[self.action]):
                 self.index = 0
         elif self.ability:
+            if player.abili_thrower and not player.charge and player.char_type == 'Samurai_Archer':
+                sound_attack_4.play()
+                player.charge = True
+            if player2.abili_thrower and not player2.charge and player2.char_type == 'Samurai_Archer':
+                sound_attack_4.play()
+                player2.charge = True
             if self.index >= len(self.animation[self.action]):
                 player.hurting = True
                 player2.hurting = True
                 if player.ability:
                     if player.abili_thrower:
                         player.stamina -= 15
+                        player.charge = False
                         player.shoot()
                 if player2.ability:
                     if player2.abili_thrower:
                         player2.stamina -= 15
+                        player.charge = False
                         player2.shoot()
                 self.ability = False
 
@@ -354,10 +376,12 @@ class Player(pygame.sprite.Sprite):
         if self.coldown == 0:
             self.coldown = 40
             if self.id == 0:
+                sound_attack_3.play()
                 bulet = Bullet(self.rect.centerx + (0.6 * self.rect.size[0] * self.direction),
                                self.rect.centery + 30, self.direction)
                 bulet_group.add(bulet)
             else:
+                sound_attack_3p.play()
                 bul = Bullet_two(self.rect.centerx + (0.6 * self.rect.size[0] * self.direction),
                                self.rect.centery + 30, self.direction)
                 bulet_group.add(bul)
@@ -434,9 +458,14 @@ class Bullet_two(pygame.sprite.Sprite):
 
 
 bulet_group = pygame.sprite.Group()
-player = Player('Fighter', 100, 450, 5, False, 0)
-player2 = Player('Fighter', 900, 450, 5, True, 1)
+player = Player('Lightning Mage', 100, 450, 5, False, 0)
+player2 = Player('Kunoichi', 900, 450, 5, True, 1)
 player2.direction = -1
+
+sound_attack_4 = pygame.mixer.Sound('sounds/vipusk (mp3cut.net).mp3')
+walk = pygame.mixer.Sound('sounds/shagi.mp3')
+jumpik = pygame.mixer.Sound('sounds/prig-s.mp3')
+
 
 if player.char_type == 'Fighter':
     sound_attack_1 = pygame.mixer.Sound('sounds/attack_rukoi_1.mp3')
@@ -448,6 +477,96 @@ if player2.char_type == 'Fighter':
     sound_attack_2p = pygame.mixer.Sound('sounds/attack_rukoi_2.mp3')
     sound_attack_3p = pygame.mixer.Sound('sounds/attack_noga.mp3')
     sound_promaxp = pygame.mixer.Sound('sounds/promax.mp3')
+
+
+if player.char_type == 'Samurai':
+    sound_attack_1 = pygame.mixer.Sound('sounds/udarchik.mp3')
+    sound_attack_2 = pygame.mixer.Sound('sounds/udar_nozhom.mp3')
+    sound_attack_3 = pygame.mixer.Sound('sounds/udar_katanoi.mp3')
+    sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
+if player2.char_type == 'Samurai':
+    sound_attack_1p = pygame.mixer.Sound('sounds/udarchik.mp3')
+    sound_attack_2p = pygame.mixer.Sound('sounds/udar_nozhom.mp3')
+    sound_attack_3p = pygame.mixer.Sound('sounds/udar_katanoi.mp3')
+    sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+
+
+if player.char_type == 'Samurai_Archer':
+    sound_attack_1 = pygame.mixer.Sound('sounds/udarchik.mp3')
+    sound_attack_2 = pygame.mixer.Sound('sounds/udar_nozhom.mp3')
+    sound_attack_3 = pygame.mixer.Sound('sounds/strela.mp3')
+    sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
+if player2.char_type == 'Samurai_Archer':
+    sound_attack_1p = pygame.mixer.Sound('sounds/udarchik.mp3')
+    sound_attack_2p = pygame.mixer.Sound('sounds/udar_nozhom.mp3')
+    sound_attack_3p = pygame.mixer.Sound('sounds/strela.mp3')
+    sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+
+
+if player.char_type == 'Shinobi':
+    sound_attack_1 = pygame.mixer.Sound('sounds/nozhom_1_attack.mp3')
+    sound_attack_2 = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
+    sound_attack_3 = pygame.mixer.Sound('sounds/attacks_3_super.mp3')
+    sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
+if player2.char_type == 'Shinobi':
+    sound_attack_1p = pygame.mixer.Sound('sounds/nozhom_1_attack.mp3')
+    sound_attack_2p = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
+    sound_attack_3p = pygame.mixer.Sound('sounds/attacks_3_super.mp3')
+    sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+
+
+if player.char_type == 'Ninja_Monk':
+    sound_attack_1 = pygame.mixer.Sound('sounds/nozhom_1_attack.mp3')
+    sound_attack_2 = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
+    sound_attack_3 = pygame.mixer.Sound('sounds/kunai_1.mp3')
+    sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
+if player2.char_type == 'Ninja_Monk':
+    sound_attack_1p = pygame.mixer.Sound('sounds/nozhom_1_attack.mp3')
+    sound_attack_2p = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
+    sound_attack_3p = pygame.mixer.Sound('sounds/kunai_1.mp3')
+    sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+
+
+if player.char_type == 'Kunoichi':
+    sound_attack_1 = pygame.mixer.Sound('sounds/cepi_1.mp3')
+    sound_attack_2 = pygame.mixer.Sound('sounds/cepi_2.mp3')
+    sound_attack_3 = pygame.mixer.Sound('sounds/eda.mp3')
+    sound_promax = pygame.mixer.Sound('sounds/promax_cepi.mp3')
+if player2.char_type == 'Kunoichi':
+    sound_attack_1p = pygame.mixer.Sound('sounds/cepi_1.mp3')
+    sound_attack_2p = pygame.mixer.Sound('sounds/cepi_2.mp3')
+    sound_attack_3p = pygame.mixer.Sound('sounds/eda.mp3')
+    sound_promaxp = pygame.mixer.Sound('sounds/promax_cepi.mp3')
+
+
+if player.char_type == 'Fire vizard':
+    sound_attack_1 = pygame.mixer.Sound('sounds/udarchik.mp3')
+    sound_attack_2 = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
+    sound_attack_3 = pygame.mixer.Sound('sounds/shar.mp3')
+    sound_attack_3.set_volume(0.2)
+    sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
+if player2.char_type == 'Fire vizard':
+    sound_attack_1p = pygame.mixer.Sound('sounds/udarchik.mp3')
+    sound_attack_2p = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
+    sound_attack_3p = pygame.mixer.Sound('sounds/shar.mp3')
+    sound_attack_3p.set_volume(0.2)
+    sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+
+
+if player.char_type == 'Lightning Mage':
+    sound_attack_1 = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
+    sound_attack_2 = pygame.mixer.Sound('sounds/udar_mechom.mp3')
+    sound_attack_3 = pygame.mixer.Sound('sounds/shar_electro.mp3')
+    sound_attack_3.set_volume(0.2)
+    sound_promax = pygame.mixer.Sound('sounds/vazm.mp3')
+if player2.char_type == 'Lightning Mage':
+    sound_attack_1p = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
+    sound_attack_2p = pygame.mixer.Sound('sounds/udar_mechom.mp3')
+    sound_attack_3p = pygame.mixer.Sound('sounds/shar_electro.mp3')
+    sound_attack_3p.set_volume(0.2)
+    sound_promaxp = pygame.mixer.Sound('sounds/vazm.mp3')
+
+
 
 
 
@@ -462,13 +581,13 @@ else:
     player2.nums = random.choice([4, 5])
 
 
-if player.char_type in ['Fighter', 'Samurai', 'Samurai_comander', 'Shinobi']:
+if player.char_type in ['Fighter', 'Samurai', 'Shinobi']:
     player.abil_krit = True
 elif player.char_type in ['Fire vizard', 'Lightning Mage', 'Ninja_Monk', 'Samurai_Archer']:
     player.abili_thrower = True
 elif player.char_type in ['Kunoichi']:
     player.abil_helth = True
-if player2.char_type in ['Fighter', 'Samurai', 'Samurai_comander', 'Shinobi']:
+if player2.char_type in ['Fighter', 'Samurai', 'Shinobi']:
     player2.abil_krit = True
 elif player2.char_type in ['Fire vizard', 'Lightning Mage', 'Ninja_Monk', 'Samurai_Archer']:
     player2.abili_thrower = True
@@ -481,6 +600,7 @@ x = 200
 y = 200
 time = 5000
 time2 = 200
+time3 = 5000
 
 list_bulet = []
 list_bulet_2 = []
@@ -621,6 +741,7 @@ while running:
                         running = False
                     if event.key == pygame.K_w and player.alive and player.stamina > 5:
                         player.jump = True
+                        jumpik.play()
                     if event.key == pygame.K_r and player.stamina > 10 and not player.in_air:
                         player.swing = True
                         player.atacks = True
@@ -639,6 +760,7 @@ while running:
                         move_scor_2 = True
                     if event.key == pygame.K_i and player2.alive and player2.stamina > 5:
                         player2.jump = True
+                        jumpik.play()
                     if event.key == pygame.K_o and player2.stamina > 10 and not player2.in_air:
                         player2.swing = True
                         player2.atacks = True
@@ -691,6 +813,7 @@ while running:
             player2.round += 1
         time = time - 1
         time2 -= 1
+        time3 -= 1
 
         player.dead()
     else:
