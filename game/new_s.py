@@ -28,10 +28,6 @@ map_image = pygame.image.load('img/les.jpg')
 map_image = pygame.transform.scale(map_image, (1000, 600))
 
 
-
-
-
-
 def draw_b():
     screen.blit(map_image, (0, 0))
 
@@ -131,14 +127,17 @@ class Player(pygame.sprite.Sprite):
         self.direction = 1
         self.flip = flipik
         self.ability = False
+        self.ability_yuri = False
         self.screm_2 = False
         self.dethent = False
         self.jump = False
         self.id = id
+        self.zvuk_scream = False
         self.numk = random.randint(1, 2)
         self.hurting = True
         self.scream_onre = False
         self.scream_gotoku = False
+        self.scream_yurei = False
         self.in_air = True
         self.runs = False
         self.hurts = True
@@ -160,8 +159,8 @@ class Player(pygame.sprite.Sprite):
         self.up_time = pygame.time.get_ticks()
         if self.char_type == 'Samurai_Archer':
             anim_type = ['Idle', 'Walk', 'Run', 'Jump', 'Attack_1', 'Attack_2', 'Attack_3', 'Dead', 'Hurt', 'Attack_4']
-        if self.char_type == 'Onre' or self.char_type == 'Gotoku':
-            anim_type = ['Idle', 'Walk', 'Run', 'Jump', 'Attack_1', 'Attack_2', 'Attack_3', 'Dead', 'Hurt', 'Scream']
+        elif self.char_type == 'Onre' or self.char_type == 'Gotoku' or self.char_type == 'Yurei':
+            anim_type = ['Idle', 'Walk', 'Run', 'Attack_1', 'Attack_1', 'Attack_2', 'Attack_3', 'Dead', 'Hurt', 'Scream']
         else:
             anim_type = ['Idle', 'Walk', 'Run', 'Jump', 'Attack_1', 'Attack_2', 'Attack_3', 'Dead', 'Hurt']
 
@@ -372,6 +371,11 @@ class Player(pygame.sprite.Sprite):
                         player2.stamina -= 15
                         player.charge = False
                         player2.shoot()
+                if player2.ability:
+                    if player2.ability_yuri:
+                        player2.stamina -= 15
+                        player2.charge = False
+                        player2.shoot()
                 player2.numk = random.randint(1, 2)
                 self.ability = False
 
@@ -473,7 +477,7 @@ class Bullet_two(pygame.sprite.Sprite):
 
 bulet_group = pygame.sprite.Group()
 if group_game == 2:
-    names = 'Onre'
+    names = 'Yurei'
 else:
     names = 'Kunoichi'
 player = Player('Lightning Mage', 100, 450, 5, False, 0)
@@ -586,14 +590,21 @@ if player2.char_type == 'Lightning Mage':
 if player2.char_type == 'Onre':
     sound_attack_1p = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
     sound_attack_2p = pygame.mixer.Sound('sounds/udar_mechom.mp3')
-    sound_attack_3p = pygame.mixer.Sound('sounds/shar_electro.mp3')
-    sound_attack_3p.set_volume(0.2)
     sound_promaxp = pygame.mixer.Sound('sounds/vazm.mp3')
 
 if player2.char_type == 'Gotoku':
     sound_attack_1p = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
     sound_attack_2p = pygame.mixer.Sound('sounds/udar_mechom.mp3')
-    sound_attack_3p = pygame.mixer.Sound('sounds/shar_electro.mp3')
+    sound_scream = pygame.mixer.Sound('sounds/scream_1.mp3')
+    sound_scream.set_volume(0.2)
+    sound_promaxp = pygame.mixer.Sound('sounds/vazm.mp3')
+
+if player2.char_type == 'Yurei':
+    sound_attack_1p = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
+    sound_attack_2p = pygame.mixer.Sound('sounds/udar_mechom.mp3')
+    sound_scream = pygame.mixer.Sound('sounds/scream_1.mp3')
+    sound_scream.set_volume(0.2)
+    sound_attack_3p = pygame.mixer.Sound('sounds/shar.mp3')
     sound_attack_3p.set_volume(0.2)
     sound_promaxp = pygame.mixer.Sound('sounds/vazm.mp3')
 
@@ -628,6 +639,9 @@ elif player2.char_type == 'Onre':
     player2.scream_onre = True
 elif player2.char_type == 'Gotoku':
     player2.scream_gotoku = True
+elif player2.char_type == 'Yurei':
+    player2.scream_yurei = True
+    player2.ability_yuri = True
 
 clock = pygame.time.Clock()
 FPS = 60
@@ -639,6 +653,8 @@ time3 = 5000
 time4 = 0
 helth = 70
 kols = 0
+
+kol_chhrge = True
 
 list_bulet = []
 list_bulet_2 = []
@@ -685,6 +701,13 @@ elif player2.char_type == 'Lightning Mage':
 elif player2.char_type == 'Ninja_Monk':
     for i in range(1, 4):
         img = pygame.image.load(f'img/Ninja_Monk/bulet.png/{i}.png').convert_alpha()
+        img = pygame.transform.scale(img, (int(img.get_width()) * 3, int(img.get_height()) * 3))
+        img = pygame.transform.scale(img, (20, 20))
+        img = pygame.transform.flip(img, True, False)
+        list_bulet_2.append(img)
+elif player2.char_type == 'Yurei':
+    for i in range(1, 4):
+        img = pygame.image.load(f'img/Yurei/bulet.png/{i}.png').convert_alpha()
         img = pygame.transform.scale(img, (int(img.get_width()) * 3, int(img.get_height()) * 3))
         img = pygame.transform.scale(img, (20, 20))
         img = pygame.transform.flip(img, True, False)
@@ -768,13 +791,22 @@ while running:
                 move_left_2 = True
             if player.rect.x > player2.rect.x and not player2.screm:
                 move_right_2 = True
-            if pygame.sprite.collide_mask(player2, player) and not player2.screm:
-                if player2.numk == 1 and player2.stamina > 10 and not player2.in_air:
-                    player2.swing = True
-                    player2.atacks = True
-                if player2.numk == 2 and player2.stamina > 10 and not player2.in_air:
+            if player2.ability_yuri:
+                if pygame.sprite.collide_mask(player2, player) and not player2.screm:
+                    if player2.stamina > 10 and not player2.in_air:
+                        player2.swing = True
+                        player2.atacks = True
+                if abs(player.rect.x - player2.rect.x) > 600 and not player2.screm:
                     player2.swing = True
                     player2.ability = True
+            else:
+                if pygame.sprite.collide_mask(player2, player) and not player2.screm:
+                    if player2.numk == 1 and player2.stamina > 10 and not player2.in_air:
+                        player2.swing = True
+                        player2.atacks = True
+                    if player2.numk == 2 and player2.stamina > 10 and not player2.in_air:
+                        player2.swing = True
+                        player2.ability = True
             if player2.scream_onre:
                 if player2.hp < 80 and not player.screm_2:
                     player2.screm = True
@@ -787,11 +819,33 @@ while running:
                     player2.screm = True
                     helth = 100
                     player2.hp += 0.1
+                    if not player2.zvuk_scream:
+                        sound_scream.play()
+                        player2.zvuk_scream = True
                     if player2.hp > 100:
                         kols += 1
                         helth = 70
                         player2.screm = False
-
+                        player2.zvuk_scream = False
+            if player2.scream_yurei and kols != 2:
+                if player2.hp < helth:
+                    player2.screm = True
+                    helth = 100
+                    player2.hp += 0.2
+                    if not player2.zvuk_scream:
+                        sound_scream.play()
+                        player2.zvuk_scream = True
+                    if player.rect.x > player2.rect.x:
+                        if kol_chhrge:
+                            player.hp -= 0.2
+                    if player.rect.x < player2.rect.x:
+                        if not kol_chhrge:
+                            player.hp -= 0.2
+                    if player2.hp > 100:
+                        kols += 1
+                        helth = 70
+                        player2.screm = False
+                        player2.zvuk_scream = False
 
 
         if group_game == 2:
@@ -811,8 +865,10 @@ while running:
                             if event.key == pygame.K_a or event.key == pygame.K_d:
                                 player.hp -= 10
                     if event.key == pygame.K_a:
+                        kol_chhrge = True
                         move_left = True
                     if event.key == pygame.K_d:
+                        kol_chhrge = False
                         move_right = True
                     if move_left and keys[pygame.K_LSHIFT]:
                         move_scor = True
