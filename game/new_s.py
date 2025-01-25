@@ -8,6 +8,8 @@ pygame.font.init()
 screen = pygame.display.set_mode((1000, 600))
 
 
+
+group_game = 2
 move_left = False
 move_right = False
 move_scor = False
@@ -68,9 +70,12 @@ def restart_game():
     player2.stamina = 100
     player.hp = 100
     player2.hp = 100
+    player2.screm = False
+    kols = 0
     time = 5000
     time2 = 200
     time3 = 5000
+    time4 = 0
     player.rect.center = (100, 450)
     player2.rect.center = (900, 450)
     player.dethent = False
@@ -126,13 +131,18 @@ class Player(pygame.sprite.Sprite):
         self.direction = 1
         self.flip = flipik
         self.ability = False
+        self.screm_2 = False
         self.dethent = False
         self.jump = False
         self.id = id
+        self.numk = random.randint(1, 2)
         self.hurting = True
+        self.scream_onre = False
+        self.scream_gotoku = False
         self.in_air = True
         self.runs = False
         self.hurts = True
+        self.screm = False
         self.death = False
         self.atacks = False
         self.swing = False
@@ -150,12 +160,14 @@ class Player(pygame.sprite.Sprite):
         self.up_time = pygame.time.get_ticks()
         if self.char_type == 'Samurai_Archer':
             anim_type = ['Idle', 'Walk', 'Run', 'Jump', 'Attack_1', 'Attack_2', 'Attack_3', 'Dead', 'Hurt', 'Attack_4']
+        if self.char_type == 'Onre' or self.char_type == 'Gotoku':
+            anim_type = ['Idle', 'Walk', 'Run', 'Jump', 'Attack_1', 'Attack_2', 'Attack_3', 'Dead', 'Hurt', 'Scream']
         else:
             anim_type = ['Idle', 'Walk', 'Run', 'Jump', 'Attack_1', 'Attack_2', 'Attack_3', 'Dead', 'Hurt']
 
         if char_type in ['Fighter', 'Samurai', 'Shinobi']:
             sow = 2
-        elif char_type == 'Samurai_Archer':
+        elif char_type in ['Samurai_Archer', 'Gotoku', 'Onre', 'Yurei']:
             sow = 2.2
         else:
             sow = 2.5
@@ -175,7 +187,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.center = (x, y)
 
     def attack(self):
-        if player.atacks and player.swing and player2.hurting:
+        if player.atacks and player.swing and player2.hurting and not player2.screm:
             player.swing = False
             player.stamina -= 5
             if pygame.sprite.collide_mask(player, player2):
@@ -201,7 +213,7 @@ class Player(pygame.sprite.Sprite):
                 sound_promaxp.play()
 
     def abilitys(self):
-        if player.abil_krit:
+        if player.abil_krit and not player2.screm:
             if player.ability and player.swing and player2.hurting:
                 player.swing = False
                 player.stamina -= 20
@@ -360,12 +372,14 @@ class Player(pygame.sprite.Sprite):
                         player2.stamina -= 15
                         player.charge = False
                         player2.shoot()
+                player2.numk = random.randint(1, 2)
                 self.ability = False
 
                 self.index = 0
         else:
             if self.index >= len(self.animation[self.action]):
                 self.atacks = False
+                player2.numk = random.randint(1, 2)
                 player.hurting = True
                 player2.hurting = True
                 self.nums = random.randint(4, 5)
@@ -420,7 +434,7 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.x += (self.direction * self.speed)
         if self.rect.right < 0 or self.rect.left > 1000 - 100:
             self.kill()
-        if pygame.sprite.spritecollide(player2, bulet_group, False):
+        if pygame.sprite.spritecollide(player2, bulet_group, False) and not player2.screm:
             if player.alive:
                 player2.hp -= random.randint(5, 20)
                 self.kill()
@@ -458,8 +472,12 @@ class Bullet_two(pygame.sprite.Sprite):
 
 
 bulet_group = pygame.sprite.Group()
+if group_game == 2:
+    names = 'Onre'
+else:
+    names = 'Kunoichi'
 player = Player('Lightning Mage', 100, 450, 5, False, 0)
-player2 = Player('Kunoichi', 900, 450, 5, True, 1)
+player2 = Player(names, 900, 450, 5, True, 1)
 player2.direction = -1
 
 sound_attack_4 = pygame.mixer.Sound('sounds/vipusk (mp3cut.net).mp3')
@@ -565,6 +583,19 @@ if player2.char_type == 'Lightning Mage':
     sound_attack_3p = pygame.mixer.Sound('sounds/shar_electro.mp3')
     sound_attack_3p.set_volume(0.2)
     sound_promaxp = pygame.mixer.Sound('sounds/vazm.mp3')
+if player2.char_type == 'Onre':
+    sound_attack_1p = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
+    sound_attack_2p = pygame.mixer.Sound('sounds/udar_mechom.mp3')
+    sound_attack_3p = pygame.mixer.Sound('sounds/shar_electro.mp3')
+    sound_attack_3p.set_volume(0.2)
+    sound_promaxp = pygame.mixer.Sound('sounds/vazm.mp3')
+
+if player2.char_type == 'Gotoku':
+    sound_attack_1p = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
+    sound_attack_2p = pygame.mixer.Sound('sounds/udar_mechom.mp3')
+    sound_attack_3p = pygame.mixer.Sound('sounds/shar_electro.mp3')
+    sound_attack_3p.set_volume(0.2)
+    sound_promaxp = pygame.mixer.Sound('sounds/vazm.mp3')
 
 
 
@@ -593,6 +624,10 @@ elif player2.char_type in ['Fire vizard', 'Lightning Mage', 'Ninja_Monk', 'Samur
     player2.abili_thrower = True
 elif player2.char_type in ['Kunoichi']:
     player2.abil_helth = True
+elif player2.char_type == 'Onre':
+    player2.scream_onre = True
+elif player2.char_type == 'Gotoku':
+    player2.scream_gotoku = True
 
 clock = pygame.time.Clock()
 FPS = 60
@@ -601,6 +636,9 @@ y = 200
 time = 5000
 time2 = 200
 time3 = 5000
+time4 = 0
+helth = 70
+kols = 0
 
 list_bulet = []
 list_bulet_2 = []
@@ -718,10 +756,49 @@ while running:
                     player2.update_action(player2.nums)
                 elif not player2.hurting:
                     player2.update_action(8)
+                elif player2.screm:
+                    player2.update_action(9)
                 else:
                     player2.update_action(0)
                 if not player2.ability:
                     player2.move(move_left_2, move_right_2, move_scor_2)
+
+        if group_game == 2:
+            if player.rect.x < player2.rect.x and not player2.screm:
+                move_left_2 = True
+            if player.rect.x > player2.rect.x and not player2.screm:
+                move_right_2 = True
+            if pygame.sprite.collide_mask(player2, player) and not player2.screm:
+                if player2.numk == 1 and player2.stamina > 10 and not player2.in_air:
+                    player2.swing = True
+                    player2.atacks = True
+                if player2.numk == 2 and player2.stamina > 10 and not player2.in_air:
+                    player2.swing = True
+                    player2.ability = True
+            if player2.scream_onre:
+                if player2.hp < 80 and not player.screm_2:
+                    player2.screm = True
+                    time4 += 1
+                    if time4 == 1000:
+                        player2.screm = False
+                        player.screm_2 = True
+            if player2.scream_gotoku and kols != 2:
+                if player2.hp < helth:
+                    player2.screm = True
+                    helth = 100
+                    player2.hp += 0.1
+                    if player2.hp > 100:
+                        kols += 1
+                        helth = 70
+                        player2.screm = False
+
+
+
+        if group_game == 2:
+            if pygame.sprite.collide_mask(player2, player) or player2.rect.x == -40 or player2.screm:
+                move_left_2 = False
+            if pygame.sprite.collide_mask(player2, player) or player2.rect.x == 775 or player2.screm:
+                move_right_2 = False
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -729,6 +806,10 @@ while running:
             if time2 < 0 or time2 > 198:
                 if event.type == pygame.KEYDOWN:
                     keys = pygame.key.get_pressed()
+                    if player2.screm:
+                        if player2.scream_onre:
+                            if event.key == pygame.K_a or event.key == pygame.K_d:
+                                player.hp -= 10
                     if event.key == pygame.K_a:
                         move_left = True
                     if event.key == pygame.K_d:
@@ -749,24 +830,25 @@ while running:
                         player.swing = True
                         player.ability = True
 
+                    if group_game == 1:
+                        if event.key == pygame.K_j:
+                            move_left_2 = True
+                        if event.key == pygame.K_l:
+                            move_right_2 = True
+                        if keys[pygame.K_RSHIFT] and move_left_2:
+                            move_scor_2 = True
+                        if keys[pygame.K_RSHIFT] and move_right_2:
+                            move_scor_2 = True
+                        if event.key == pygame.K_i and player2.alive and player2.stamina > 5:
+                            player2.jump = True
+                            jumpik.play()
+                        if event.key == pygame.K_o and player2.stamina > 10 and not player2.in_air:
+                            player2.swing = True
+                            player2.atacks = True
+                        if event.key == pygame.K_p and player2.stamina > 10 and not player2.in_air:
+                            player2.swing = True
+                            player2.ability = True
 
-                    if event.key == pygame.K_j:
-                        move_left_2 = True
-                    if event.key == pygame.K_l:
-                        move_right_2 = True
-                    if keys[pygame.K_RSHIFT] and move_left_2:
-                        move_scor_2 = True
-                    if keys[pygame.K_RSHIFT] and move_right_2:
-                        move_scor_2 = True
-                    if event.key == pygame.K_i and player2.alive and player2.stamina > 5:
-                        player2.jump = True
-                        jumpik.play()
-                    if event.key == pygame.K_o and player2.stamina > 10 and not player2.in_air:
-                        player2.swing = True
-                        player2.atacks = True
-                    if event.key == pygame.K_p and player2.stamina > 10 and not player2.in_air:
-                        player2.swing = True
-                        player2.ability = True
 
                 if event.type == pygame.KEYUP:
                     keys = pygame.key.get_pressed()
@@ -779,14 +861,16 @@ while running:
                     if not(keys[pygame.K_LSHIFT] and move_right):
                         move_scor = False
 
-                    if event.key == pygame.K_j:
-                        move_left_2 = False
-                    if event.key == pygame.K_l:
-                        move_right_2 = False
-                    if not(keys[pygame.K_RSHIFT] and move_left_2):
-                        move_scor_2 = False
-                    if not(keys[pygame.K_RSHIFT] and move_right_2):
-                        move_scor_2 = False
+                    if group_game == 1:
+                        if event.key == pygame.K_j:
+                            move_left_2 = False
+                        if event.key == pygame.K_l:
+                            move_right_2 = False
+                        if not(keys[pygame.K_RSHIFT] and move_left_2):
+                            move_scor_2 = False
+                        if not(keys[pygame.K_RSHIFT] and move_right_2):
+                            move_scor_2 = False
+
         if time2 > 0:
             if time // 4000 == 1:
                 draw_text("01:" + str(time % 3600 // 60), RED, 468, 18, 35)
