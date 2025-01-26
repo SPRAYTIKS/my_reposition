@@ -17,6 +17,7 @@ move_scor = False
 move_left_2 = False
 move_right_2 = False
 move_scor_2 = False
+map = 1
 rou = 1
 WHITE = (255, 255, 255)
 GRAVITY = 0.25
@@ -25,8 +26,15 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 YELOW = (255, 255, 0)
 BLUES = (0, 0, 255)
-map_image = pygame.image.load('img/les.jpg')
-map_image = pygame.transform.scale(map_image, (1000, 600))
+if map == 1:
+    map_image = pygame.image.load('map/les.jpg')
+    map_image = pygame.transform.scale(map_image, (1000, 600))
+if map == 2:
+    map_image = pygame.image.load('map/map_1.png')
+    map_image = pygame.transform.scale(map_image, (1000, 600))
+if map == 3:
+    map_image = pygame.image.load('map/map_2.jpg')
+    map_image = pygame.transform.scale(map_image, (1000, 600))
 
 
 def draw_b():
