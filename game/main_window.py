@@ -2,10 +2,9 @@ import os
 import sys
 import pygame
 import pygame_widgets
-from pygame_widgets.button import Button
+from pygame_widgets.button import Button, ButtonArray
 from pygame_widgets.slider import Slider
 from pygame_widgets.textbox import TextBox
-
 
 
 def load_image(name, color_key=None):
@@ -24,7 +23,8 @@ def load_image(name, color_key=None):
 
 
 def settings(*args):
-    global slider_m, slider_e, open_settings, gromkosti_e, gromkosti_m, count_click, mode_play
+    global slider_m, slider_e, open_settings, gromkosti_e, gromkosti_m, count_click,\
+        mode_play, start, locat
     count_click += 1
     if (count_click == 1):
         open_settings = True
@@ -59,8 +59,27 @@ def settings(*args):
     elif count_click == 3:
         if args:
             mode_play = args[0]
+        choice_character()
+    elif count_click == 4:
+        if args:
+            pl1_char = args[0]
         if mode_play:
-            choice_character()
+            choice_character(2)
+    elif count_click == 5:
+        if args and mode_play:
+            pl2_char = args[0]
+        else:
+            location()
+    elif count_click == 6:
+        if mode_play:
+            location()
+        else:
+            locat = args[0]
+            start = True
+    elif count_click == 7 and not start:
+        locat = args[0]
+        start = True
+
 
 def mode():
     global slider_m, slider_e, gromkosti_e, gromkosti_m, count_click, btn_1pl, btn_2pl
@@ -70,71 +89,58 @@ def mode():
     gromkosti_e.hide()
     screen.blit(fon, (0, 0))
     btn_1pl = Button(screen, 550, 300, 200, 100, text='1 plaer', fontSize=50, margin=20,
-                      inactiveColour=(200, 50, 0), hoverColour=(150, 0, 0),
-                      overpressedColour=(0, 200, 20),
-                      radius=20,
-                      onClick=lambda: settings(False)
-                      )
-    btn_2pl = Button(screen, 250, 300, 200, 100, text='2 plaer', fontSize=50, margin=20,
-                      inactiveColour=(200, 50, 0), hoverColour=(150, 0, 0),
-                      overpressedColour=(0, 200, 20),
-                      radius=20,
-                      onClick=lambda: settings(True)
-                      )
-
-
-def obrabotka(n):
-    list_for_obrabotka.append(n)
-    pl1_char = list_for_obrabotka[0]
-    if not mode_play:
-        return True
-    if len(list_for_obrabotka) == 2:
-        pl2_char = list_for_obrabotka[1]
-        return True
-    return False
-
-
-def choice_character():
-    character1 = [['Fighter', 30, 120], ['Fire Vizard', 100, 120], ['Kunoichi', 180, 120],
-                  ['Lightning  Mage', 30, 190], ['Ninja Monk', 100, 190], ['Samurai', 180, 160],
-                  ['Samurai Archer', 50, 260], ['Shinobi', 160, 260]]
-    global mode_play, btn_1pl, btn_2pl
-    btn_1pl.hide()
-    btn_2pl.hide()
-    if mode_play:
-        for i in range(8):
-            btn = Button(screen, character1[i][1], character1[i][2], 200, 100,
-                         text=character1[i][0], fontSize=25, margin=20,
-                         inactiveColour=(200, 90, 0), hoverColour=(150, 0, 0),
-                         overpressedColour=(0, 200, 20),
-                         radius=20,
-                         onClick=lambda: obrabotka(i)
-                         )
-        for i in range(8):
-            btn = Button(screen, character1[i][1] + 500, character1[i][2], 200, 100,
-                         text=character1[i][0], fontSize=25, margin=20,
-                         inactiveColour=(200, 90, 0), hoverColour=(150, 0, 0),
-                         overpressedColour=(0, 200, 20),
-                         radius=20,
-                         onClick=lambda: obrabotka(i + 8)
-                         )
-    else:
-        btn = Button(screen, character1[i][1] + 350, character1[i][2], 200, 100,
-                     text=character1[i][0], fontSize=25, margin=20,
-                     inactiveColour=(200, 90, 0), hoverColour=(150, 0, 0),
+                     inactiveColour=(200, 50, 0), hoverColour=(150, 0, 0),
                      overpressedColour=(0, 200, 20),
                      radius=20,
-                     onClick=lambda: obrabotka(i)
+                     onClick=lambda: settings(False)
                      )
+    btn_2pl = Button(screen, 250, 300, 200, 100, text='2 plaer', fontSize=50, margin=20,
+                     inactiveColour=(200, 50, 0), hoverColour=(150, 0, 0),
+                     overpressedColour=(0, 200, 20),
+                     radius=20,
+                     onClick=lambda: settings(True)
+                     )
+
+
+def choice_character(*args):
+    global mode_play, btn_1pl, btn_2pl, buttonChar, btn_play
+    character1 = ['Fighter', 'Fire Vizard', 'Kunoichi', 'Lightning  Mage', 'Ninja Monk',
+                  'Samurai', 'Samurai Archer', 'Shinobi']
+    if not args:
+        btn_1pl.hide()
+        btn_2pl.hide()
+        btn_play.hide()
+    else:
+        buttonChar.hide()
+        screen.blit(fon, (0, 0))
+    buttonChar = ButtonArray(screen, 150, 50, 600, 450, (2, 4), colour=(200, 234, 0),
+                             border=40, texts=character1,
+                             onClicks=(
+                                 lambda: settings(0), lambda: settings(1), lambda: settings(2),
+                                 lambda: settings(3),
+                                 lambda: settings(4), lambda: settings(5), lambda: settings(6),
+                                 lambda: settings(7)))
+
+
+def location():
+    global buttonChar, btnLocations
+    buttonChar.hide()
+    screen.blit(fon, (0, 0))
+    locations = ['Sinister Foresr', 'Sinister Foresr', 'Sinister Foresr']
+    btnLocations = ButtonArray(screen, 200, 50, 600, 250, (3, 1), colour=(200, 234, 0),
+                               border=80, texts=locations,
+                               onClicks=(
+                                   lambda: settings(0), lambda: settings(1), lambda: settings(2)))
+
 
 # Создаем переменные громкостей музыки и эффектов
 music_value = 0
 effects_value = 0
-slider_m = slider_e = gromkosti_e = gromkosti_m = count_click = btn_1pl = btn_2pl = mode_play =  0
-open_settings = False
+slider_m = slider_e = gromkosti_e = gromkosti_m = count_click = btn_1pl = btn_2pl = mode_play = 0
+open_settings = start = False
 pygame.init()
 list_for_obrabotka = []
-pl1_char = pl2_char = 0
+pl1_char = pl2_char = buttonChar = btnLocations = locat = 0
 
 size = width, height = 1000, 600
 screen = pygame.display.set_mode(size)
@@ -147,9 +153,6 @@ btn_play = Button(screen, 400, 150, 200, 100, text='Play', fontSize=50, margin=2
                   radius=20,
                   onClick=lambda: settings()
                   )
-
-
-
 running = True
 while running:
     for event in pygame.event.get():
