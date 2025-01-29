@@ -27,7 +27,7 @@ GREEN = (0, 255, 0)
 YELOW = (255, 255, 0)
 BLUES = (0, 0, 255)
 if map == 1:
-    map_image = pygame.image.load('map/les.jpg')
+    map_image = pygame.image.load('map/lesik.jpg')
     map_image = pygame.transform.scale(map_image, (1000, 600))
 if map == 2:
     map_image = pygame.image.load('map/map_1.png')

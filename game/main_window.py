@@ -78,7 +78,7 @@ player_image_second = load_image('hero_stan.gif')
 player_image_second = pygame.transform.scale(player_image_second, (58*3, 89*3))
 player_image_second = pygame.transform.flip(player_image_second, True, False)
 
-map_image = load_image('les.jpg')
+map_image = load_image('fon_start.jpg')
 map_image = pygame.transform.scale(map_image, (1000, 600))
 
 
