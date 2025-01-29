@@ -297,3 +297,4 @@ while running:
         plaer.update_action(0)
     clock.tick(FPS)
 pygame.quit()
+
