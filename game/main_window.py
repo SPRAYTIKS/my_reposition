@@ -7,9 +7,8 @@ from pygame_widgets.slider import Slider
 from pygame_widgets.textbox import TextBox
 
 
-
 def draw_b():
-    screen.blit(fon,(0, 0))
+    screen.blit(fon, (0, 0))
 
 
 class Player(pygame.sprite.Sprite):
@@ -86,7 +85,7 @@ def settings(*args):
     if (count_click == 1):
         open_settings = True
         screen.blit(fon, (0, 0))
-        intro_text = ["Музыка", "Эффекты", ]
+        intro_text = ["Музыка", "Эффекты"]
         font_30 = pygame.font.Font(None, 30)
         text_coord = 73
         for i in range(2):
@@ -97,6 +96,28 @@ def settings(*args):
             text_coord += intro_rect.height
             screen.blit(string_rendered, intro_rect)
             text_coord += 75
+        text1 = ['Первый игрок:', 'a - влево', 'd - вправо', 'w - прыжок', 'r - обычный удар',
+                 'f - способность']
+        text2 = ['Второй игрок:', 'j - влево', 'l - вправо', 'i - прыжок', 'o - обычный удар',
+                 'p - способность']
+        text_coord = 60
+        for i in range(6):
+            string_rendered = pygame.font.Font(None, 24).render(text1[i], 1, pygame.Color('black'))
+            intro_rect = string_rendered.get_rect()
+            intro_rect.top = text_coord - 10
+            intro_rect.x = 50
+            text_coord += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
+            text_coord += 24
+        text_coord = 60
+        for i in range(6):
+            string_rendered = pygame.font.Font(None, 24).render(text2[i], 1, pygame.Color('black'))
+            intro_rect = string_rendered.get_rect()
+            intro_rect.top = text_coord - 10
+            intro_rect.x = 220
+            text_coord += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
+            text_coord += 24
 
         slider_m = Slider(screen, 840, 10, 150, 20, min=0, max=99, step=1, initial=0)
         font = pygame.font.Font(None, 50)
@@ -143,6 +164,7 @@ def mode():
     screen.blit(fon, (0, 0))
     btn_play.hide()
     btn_1pl = Button(screen, 550, 300, 200, 100, text='1 player', fontSize=50, margin=20,
+                     colour=(128, 128, 128),
                      inactiveColour=(200, 50, 0), hoverColour=(150, 0, 0),
                      overpressedColour=(0, 200, 20),
                      radius=20,
@@ -150,7 +172,7 @@ def mode():
                      )
     btn_2pl = Button(screen, 250, 300, 200, 100, text='2 player', fontSize=50, margin=20,
                      inactiveColour=(200, 50, 0), hoverColour=(150, 0, 0),
-                     overpressedColour=(0, 200, 20),
+                     overpressedColour=(0, 200, 20), colour=(128, 128, 128),
                      radius=20,
                      onClick=lambda: settings(True)
                      )
@@ -167,6 +189,7 @@ def persona(n):
                         onClick=lambda: settings(n), red_flag=False
                         )
     plaer = Player(character1[n], 850, 300, True)
+
 
 def choice_character(*args):
     global mode_play, btn_1pl, btn_2pl, buttonChar, btn_play, btn_choice
@@ -210,11 +233,11 @@ def location():
     btn_choice.hide()
     screen.blit(fon, (0, 0))
     locations_map = []
-    #for i in range(3):
-        #im = pygame.Surface((180, 400))
-        #pers = pygame.transform.scale(load_image('btn_3.png'), (width, height))
-        #im.blit(pers, (0, 0))
-        #locations_map.append(im)
+    # for i in range(3):
+    # im = pygame.Surface((180, 400))
+    # pers = pygame.transform.scale(load_image('btn_3.png'), (width, height))
+    # im.blit(pers, (0, 0))
+    # locations_map.append(im)
     btnLocations = ButtonArray(screen, 200, 50, 600, 450, (1, 3), colour=(128, 128, 128),
                                image=locations_map,
                                border=20,
