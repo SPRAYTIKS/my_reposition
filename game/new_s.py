@@ -9,7 +9,7 @@ screen = pygame.display.set_mode((1000, 600))
 
 
 
-group_game = 2
+group_game = 1
 runing_last_menu = False
 move_left = False
 move_right = False
