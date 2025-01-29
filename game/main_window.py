@@ -141,6 +141,7 @@ def settings(*args):
     elif count_click == 4:
         if args:
             pl1_char = args[0]
+            plaer = 0
         if mode_play:
             choice_character(2)
         else:
@@ -240,7 +241,7 @@ def location():
     # locations_map.append(im)
     btnLocations = ButtonArray(screen, 200, 50, 600, 450, (1, 3), colour=(128, 128, 128),
                                image=locations_map,
-                               border=20,
+                               border=20, inactiveColour=(255, 255, 0),
                                onClicks=(
                                    lambda: settings(0), lambda: settings(1), lambda: settings(2)))
 
