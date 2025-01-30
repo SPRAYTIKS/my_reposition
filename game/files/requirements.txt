@@ -1,0 +1,2 @@
+pygame==2.6.1
+pygame-widgets==11.5

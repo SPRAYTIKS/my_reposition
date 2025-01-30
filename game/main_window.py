@@ -90,8 +90,12 @@ def load_image(name, color_key=None):
 
 def settings(*args):
     global slider_m, slider_e, open_settings, gromkosti_e, gromkosti_m, count_click, \
-        mode_play, start, locat, plaer, pl1_char, pl2_char, runs
+        mode_play, start, locat, plaer, pl1_char, pl2_char, runs, flagok, kol
     count_click += 1
+    flagok = True
+    if kol == 0:
+        sound_meny.play()
+        kol += 1
     if (count_click == 1):
         open_settings = True
         screen.blit(fon, (0, 0))
@@ -129,13 +133,13 @@ def settings(*args):
             screen.blit(string_rendered, intro_rect)
             text_coord += 24
 
-        slider_m = Slider(screen, 840, 10, 150, 20, min=0, max=99, step=1, initial=0)
+        slider_m = Slider(screen, 840, 10, 150, 20, min=0, max=99, step=1, initial=50)
         font = pygame.font.Font(None, 50)
         text = font.render("Музыка", True, (100, 255, 100))
         gromkosti_m = TextBox(screen, 950, 50, 45, 40, fontSize=30)
         gromkosti_m.disable()
 
-        slider_e = Slider(screen, 840, 110, 150, 20, min=0, max=99, step=1, initial=0)
+        slider_e = Slider(screen, 840, 110, 150, 20, min=0, max=99, step=1, initial=50)
         font = pygame.font.Font(None, 50)
         text = font.render("Эффекты", True, (100, 255, 100))
         gromkosti_e = TextBox(screen, 950, 150, 45, 40, fontSize=30)
@@ -279,18 +283,22 @@ def location():
 
 # Создаем переменные громкостей музыки и эффектов
 music_value = 0
+slider_m = slider_e = 0
 effects_value = btn_play = fon = plaer = 0
-slider_m = slider_e = gromkosti_e = gromkosti_m = count_click = btn_1pl \
+gromkosti_e = gromkosti_m = 100
+count_click = btn_1pl \
     = btn_2pl = mode_play = btn_choice = 0
 open_settings = red_flag = False
 pygame.init()
 list_for_obrabotka = []
 pl1_char = pl2_char = buttonChar = btnLocations = locat = 0
-
+kol = 0
 size = width, height = 1000, 600
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
 FPS = 60
+flagok = False
+sound_meny= pygame.mixer.Sound('sounds/musik_fon.mp3')
 runs = True
 
 

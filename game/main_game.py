@@ -4,9 +4,12 @@ import random
 import os
 
 
+# начальное окно для запуска меню
 main_window.start()
 wens = True
 while main_window.runs:
+    if main_window.flagok:
+        main_window.sound_meny.set_volume(main_window.slider_m.getValue() / 100)
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
@@ -31,9 +34,10 @@ pygame.quit()
 
 pygame.init()
 pygame.font.init()
-
 screen = pygame.display.set_mode((1000, 600))
-
+if wens:
+    musik_efect = main_window.slider_e.getValue() / 100
+    musik_musik = main_window.slider_m.getValue() / 100
 
 if main_window.mode_play:
     group_game = 1
@@ -55,6 +59,8 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 YELOW = (255, 255, 0)
 BLUES = (0, 0, 255)
+
+#выбор карты
 if map == 0:
     map_image = pygame.image.load('map/lesik.jpg')
     map_image = pygame.transform.scale(map_image, (1000, 600))
@@ -70,11 +76,14 @@ def draw_b():
     screen.blit(map_image, (0, 0))
 
 
+# вывод текста
 def draw_text(text, text_col, x, y, size):
     img = pygame.font.Font('font/batle.ttf', size)
     img = img.render(text, True, text_col)
     screen.blit(img, (x, y))
 
+
+# статус бар
 def status_bar():
     if player2.hp >= 100:
         player2.hp = 100
@@ -84,7 +93,6 @@ def status_bar():
         player.stamina -= 0.15
     if player2.in_air:
         player2.stamina -= 0.15
-
 
     if player.stamina < 0:
         player.stamina = 0
@@ -97,6 +105,7 @@ def status_bar():
         player2.stamina += 0.07
 
 
+# рестарт игры
 def restart_game():
     global time, time2, move_left, move_right, \
         move_scor, move_left_2, move_right_2, move_scor_2, runing_last_menu, kols, time3, time4
@@ -151,7 +160,7 @@ def game_rounds():
         runing_last_menu = True
 
 
-
+# класс первого игрока
 class Player(pygame.sprite.Sprite):
     def __init__(self, char_type, x, y, speed, flipik, id):
         pygame.sprite.Sprite.__init__(self)
@@ -212,8 +221,7 @@ class Player(pygame.sprite.Sprite):
             sow = 2.2
         else:
             sow = 2.5
-
-
+        # добавление анимации в список
         for anim in anim_type:
             temp = []
             num_files = len(os.listdir(f'img/{char_type}/{anim}.png'))
@@ -227,6 +235,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
+    # реализация атаки
     def attack(self):
         if player.atacks and player.swing and player2.hurting and not player2.screm:
             player.swing = False
@@ -259,6 +268,7 @@ class Player(pygame.sprite.Sprite):
             else:
                 sound_promaxp.play()
 
+    # реализация способности
     def abilitys(self):
         if player.abil_krit and not player2.screm:
             if player.ability and player.swing and player2.hurting:
@@ -311,19 +321,20 @@ class Player(pygame.sprite.Sprite):
                 else:
                     player2.hp = 100
 
-
+    # создания статус бара для здоровья
     def draw_health_bar(self, health, x, y):
         ratio = health / 100
         pygame.draw.rect(screen, YELOW, (x - 2, y - 2, 404, 29))
         pygame.draw.rect(screen, RED, (x, y, 400, 25))
         pygame.draw.rect(screen, GREEN, (x, y, 400 * ratio, 25))
 
+
     def draw_stamina_bar(self, stamina, x, y):
         stam = stamina / 100
         pygame.draw.rect(screen, WHITE, (x - 2, y - 2, 404, 12))
         pygame.draw.rect(screen, BLUES, (x, y, 400 * stam, 8))
 
-
+    # описание смерти
     def dead(self):
         if player.hp <= 0:
             FLIPPER = 150
@@ -346,12 +357,13 @@ class Player(pygame.sprite.Sprite):
                 player2.indexis += 1
             player2.dethent = True
 
+
     def update(self):
         self.update_anim()
         if self.coldown > 0:
             self.coldown -= 1
 
-
+    # передвижение игрока
     def move(self, moving_left, moving_right, move_scor):
         sx = 0
         sy = 0
@@ -401,7 +413,7 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.y += sy
 
-
+    # анимации
     def update_anim(self):
         FLIPPER = 80
         self.image = self.animation[self.action][self.index]
@@ -413,10 +425,8 @@ class Player(pygame.sprite.Sprite):
                 self.index = 0
         elif self.ability:
             if player.abili_thrower and not player.charge and player.char_type == 'Samurai_Archer':
-                sound_attack_4.play()
                 player.charge = True
             if player2.abili_thrower and not player2.charge and player2.char_type == 'Samurai_Archer':
-                sound_attack_4.play()
                 player2.charge = True
             if self.index >= len(self.animation[self.action]):
                 player.hurting = True
@@ -453,6 +463,7 @@ class Player(pygame.sprite.Sprite):
                 self.index = 0
 
 
+    # стрельба
     def shoot(self):
         if self.coldown == 0:
             self.coldown = 40
@@ -468,7 +479,6 @@ class Player(pygame.sprite.Sprite):
                 bulet_group.add(bul)
 
 
-
     def update_action(self, new_action):
         if new_action != self.action:
             self.action = new_action
@@ -479,6 +489,7 @@ class Player(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
+# класс снаряда
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
         pygame.sprite.Sprite.__init__(self)
@@ -489,6 +500,7 @@ class Bullet(pygame.sprite.Sprite):
         self.up_time = pygame.time.get_ticks()
         self.rect.center = (x, y)
         self.direction = direction
+
 
     def update(self):
         FLIPPER = 80
@@ -509,7 +521,7 @@ class Bullet(pygame.sprite.Sprite):
                 self.kill()
 
 
-
+# класс снаряда_2
 class Bullet_two(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
         pygame.sprite.Sprite.__init__(self)
@@ -520,6 +532,7 @@ class Bullet_two(pygame.sprite.Sprite):
         self.up_time = pygame.time.get_ticks()
         self.rect.center = (x, y)
         self.direction = direction
+
 
     def update(self):
         FLIPPER = 80
@@ -549,138 +562,212 @@ if group_game == 2:
     names = locations_map[main_window.locat]
 else:
     names = character1[main_window.pl2_char]
+
+# создание игроков
 player = Player(character1[main_window.pl1_char], 100, 450, 5, False, 0)
 player2 = Player(names, 900, 450, 5, True, 1)
 player2.direction = -1
 
-sound_attack_4 = pygame.mixer.Sound('sounds/vipusk (mp3cut.net).mp3')
-walk = pygame.mixer.Sound('sounds/shagi.mp3')
-walk.set_volume(main_window.effects_value // 100)
-jumpik = pygame.mixer.Sound('sounds/prig-s.mp3')
-jumpik.set_volume(main_window.effects_value // 100)
+# звуки
+if wens:
+    walk = pygame.mixer.Sound('sounds/shagi.mp3')
+    walk.set_volume(musik_efect)
+    jumpik = pygame.mixer.Sound('sounds/prig-s.mp3')
+    jumpik.set_volume(musik_efect)
+
+    if player.char_type == 'Fighter':
+        sound_attack_1 = pygame.mixer.Sound('sounds/attack_rukoi_1.mp3')
+        sound_attack_2 = pygame.mixer.Sound('sounds/attack_rukoi_2.mp3')
+        sound_attack_3 = pygame.mixer.Sound('sounds/attack_noga.mp3')
+        sound_promax = pygame.mixer.Sound('sounds/promax.mp3')
+        sound_attack_1.set_volume(musik_efect)
+        sound_attack_2.set_volume(musik_efect)
+        sound_attack_3.set_volume(musik_efect)
+        sound_promax.set_volume(musik_efect)
+    if player2.char_type == 'Fighter':
+        sound_attack_1p = pygame.mixer.Sound('sounds/attack_rukoi_1.mp3')
+        sound_attack_2p = pygame.mixer.Sound('sounds/attack_rukoi_2.mp3')
+        sound_attack_3p = pygame.mixer.Sound('sounds/attack_noga.mp3')
+        sound_promaxp = pygame.mixer.Sound('sounds/promax.mp3')
+        sound_attack_1p.set_volume(musik_efect)
+        sound_attack_2p.set_volume(musik_efect)
+        sound_attack_3p.set_volume(musik_efect)
+        sound_promaxp.set_volume(musik_efect)
 
 
-if player.char_type == 'Fighter':
-    sound_attack_1 = pygame.mixer.Sound('sounds/attack_rukoi_1.mp3')
-    sound_attack_2 = pygame.mixer.Sound('sounds/attack_rukoi_2.mp3')
-    sound_attack_3 = pygame.mixer.Sound('sounds/attack_noga.mp3')
-    sound_promax = pygame.mixer.Sound('sounds/promax.mp3')
-if player2.char_type == 'Fighter':
-    sound_attack_1p = pygame.mixer.Sound('sounds/attack_rukoi_1.mp3')
-    sound_attack_2p = pygame.mixer.Sound('sounds/attack_rukoi_2.mp3')
-    sound_attack_3p = pygame.mixer.Sound('sounds/attack_noga.mp3')
-    sound_promaxp = pygame.mixer.Sound('sounds/promax.mp3')
+    if player.char_type == 'Samurai':
+        sound_attack_1 = pygame.mixer.Sound('sounds/udarchik.mp3')
+        sound_attack_2 = pygame.mixer.Sound('sounds/udar_nozhom.mp3')
+        sound_attack_3 = pygame.mixer.Sound('sounds/udar_katanoi.mp3')
+        sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
+        sound_attack_1.set_volume(musik_efect)
+        sound_attack_2.set_volume(musik_efect)
+        sound_attack_3.set_volume(musik_efect)
+        sound_promax.set_volume(musik_efect)
+    if player2.char_type == 'Samurai':
+        sound_attack_1p = pygame.mixer.Sound('sounds/udarchik.mp3')
+        sound_attack_2p = pygame.mixer.Sound('sounds/udar_nozhom.mp3')
+        sound_attack_3p = pygame.mixer.Sound('sounds/udar_katanoi.mp3')
+        sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+        sound_attack_1p.set_volume(musik_efect)
+        sound_attack_2p.set_volume(musik_efect)
+        sound_attack_3p.set_volume(musik_efect)
+        sound_promaxp.set_volume(musik_efect)
 
 
-if player.char_type == 'Samurai':
-    sound_attack_1 = pygame.mixer.Sound('sounds/udarchik.mp3')
-    sound_attack_2 = pygame.mixer.Sound('sounds/udar_nozhom.mp3')
-    sound_attack_3 = pygame.mixer.Sound('sounds/udar_katanoi.mp3')
-    sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
-if player2.char_type == 'Samurai':
-    sound_attack_1p = pygame.mixer.Sound('sounds/udarchik.mp3')
-    sound_attack_2p = pygame.mixer.Sound('sounds/udar_nozhom.mp3')
-    sound_attack_3p = pygame.mixer.Sound('sounds/udar_katanoi.mp3')
-    sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+    if player.char_type == 'Samurai_Archer':
+        sound_attack_1 = pygame.mixer.Sound('sounds/udarchik.mp3')
+        sound_attack_2 = pygame.mixer.Sound('sounds/udar_nozhom.mp3')
+        sound_attack_3 = pygame.mixer.Sound('sounds/strela.mp3')
+        sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
+        sound_attack_1.set_volume(musik_efect)
+        sound_attack_2.set_volume(musik_efect)
+        sound_attack_3.set_volume(musik_efect)
+        sound_promax.set_volume(musik_efect)
+    if player2.char_type == 'Samurai_Archer':
+        sound_attack_1p = pygame.mixer.Sound('sounds/udarchik.mp3')
+        sound_attack_2p = pygame.mixer.Sound('sounds/udar_nozhom.mp3')
+        sound_attack_3p = pygame.mixer.Sound('sounds/strela.mp3')
+        sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+        sound_attack_1p.set_volume(musik_efect)
+        sound_attack_2p.set_volume(musik_efect)
+        sound_attack_3p.set_volume(musik_efect)
+        sound_promaxp.set_volume(musik_efect)
 
 
-if player.char_type == 'Samurai_Archer':
-    sound_attack_1 = pygame.mixer.Sound('sounds/udarchik.mp3')
-    sound_attack_2 = pygame.mixer.Sound('sounds/udar_nozhom.mp3')
-    sound_attack_3 = pygame.mixer.Sound('sounds/strela.mp3')
-    sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
-if player2.char_type == 'Samurai_Archer':
-    sound_attack_1p = pygame.mixer.Sound('sounds/udarchik.mp3')
-    sound_attack_2p = pygame.mixer.Sound('sounds/udar_nozhom.mp3')
-    sound_attack_3p = pygame.mixer.Sound('sounds/strela.mp3')
-    sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+    if player.char_type == 'Shinobi':
+        sound_attack_1 = pygame.mixer.Sound('sounds/nozhom_1_attack.mp3')
+        sound_attack_2 = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
+        sound_attack_3 = pygame.mixer.Sound('sounds/attacks_3_super.mp3')
+        sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
+        sound_attack_1.set_volume(musik_efect)
+        sound_attack_2.set_volume(musik_efect)
+        sound_attack_3.set_volume(musik_efect)
+        sound_promax.set_volume(musik_efect)
+    if player2.char_type == 'Shinobi':
+        sound_attack_1p = pygame.mixer.Sound('sounds/nozhom_1_attack.mp3')
+        sound_attack_2p = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
+        sound_attack_3p = pygame.mixer.Sound('sounds/attacks_3_super.mp3')
+        sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+        sound_attack_1p.set_volume(musik_efect)
+        sound_attack_2p.set_volume(musik_efect)
+        sound_attack_3p.set_volume(musik_efect)
+        sound_promaxp.set_volume(musik_efect)
 
 
-if player.char_type == 'Shinobi':
-    sound_attack_1 = pygame.mixer.Sound('sounds/nozhom_1_attack.mp3')
-    sound_attack_2 = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
-    sound_attack_3 = pygame.mixer.Sound('sounds/attacks_3_super.mp3')
-    sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
-if player2.char_type == 'Shinobi':
-    sound_attack_1p = pygame.mixer.Sound('sounds/nozhom_1_attack.mp3')
-    sound_attack_2p = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
-    sound_attack_3p = pygame.mixer.Sound('sounds/attacks_3_super.mp3')
-    sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+    if player.char_type == 'Ninja_Monk':
+        sound_attack_1 = pygame.mixer.Sound('sounds/nozhom_1_attack.mp3')
+        sound_attack_2 = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
+        sound_attack_3 = pygame.mixer.Sound('sounds/kunai_1.mp3')
+        sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
+        sound_attack_1.set_volume(musik_efect)
+        sound_attack_2.set_volume(musik_efect)
+        sound_attack_3.set_volume(musik_efect)
+        sound_promax.set_volume(musik_efect)
+    if player2.char_type == 'Ninja_Monk':
+        sound_attack_1p = pygame.mixer.Sound('sounds/nozhom_1_attack.mp3')
+        sound_attack_2p = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
+        sound_attack_3p = pygame.mixer.Sound('sounds/kunai_1.mp3')
+        sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+        sound_attack_1p.set_volume(musik_efect)
+        sound_attack_2p.set_volume(musik_efect)
+        sound_attack_3p.set_volume(musik_efect)
+        sound_promaxp.set_volume(musik_efect)
 
 
-if player.char_type == 'Ninja_Monk':
-    sound_attack_1 = pygame.mixer.Sound('sounds/nozhom_1_attack.mp3')
-    sound_attack_2 = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
-    sound_attack_3 = pygame.mixer.Sound('sounds/kunai_1.mp3')
-    sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
-if player2.char_type == 'Ninja_Monk':
-    sound_attack_1p = pygame.mixer.Sound('sounds/nozhom_1_attack.mp3')
-    sound_attack_2p = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
-    sound_attack_3p = pygame.mixer.Sound('sounds/kunai_1.mp3')
-    sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+    if player.char_type == 'Kunoichi':
+        sound_attack_1 = pygame.mixer.Sound('sounds/cepi_1.mp3')
+        sound_attack_2 = pygame.mixer.Sound('sounds/cepi_2.mp3')
+        sound_attack_3 = pygame.mixer.Sound('sounds/eda.mp3')
+        sound_promax = pygame.mixer.Sound('sounds/promax_cepi.mp3')
+        sound_attack_1.set_volume(musik_efect)
+        sound_attack_2.set_volume(musik_efect)
+        sound_attack_3.set_volume(musik_efect)
+        sound_promax.set_volume(musik_efect)
+    if player2.char_type == 'Kunoichi':
+        sound_attack_1p = pygame.mixer.Sound('sounds/cepi_1.mp3')
+        sound_attack_2p = pygame.mixer.Sound('sounds/cepi_2.mp3')
+        sound_attack_3p = pygame.mixer.Sound('sounds/eda.mp3')
+        sound_promaxp = pygame.mixer.Sound('sounds/promax_cepi.mp3')
+        sound_attack_1p.set_volume(musik_efect)
+        sound_attack_2p.set_volume(musik_efect)
+        sound_attack_3p.set_volume(musik_efect)
+        sound_promaxp.set_volume(musik_efect)
 
 
-if player.char_type == 'Kunoichi':
-    sound_attack_1 = pygame.mixer.Sound('sounds/cepi_1.mp3')
-    sound_attack_2 = pygame.mixer.Sound('sounds/cepi_2.mp3')
-    sound_attack_3 = pygame.mixer.Sound('sounds/eda.mp3')
-    sound_promax = pygame.mixer.Sound('sounds/promax_cepi.mp3')
-if player2.char_type == 'Kunoichi':
-    sound_attack_1p = pygame.mixer.Sound('sounds/cepi_1.mp3')
-    sound_attack_2p = pygame.mixer.Sound('sounds/cepi_2.mp3')
-    sound_attack_3p = pygame.mixer.Sound('sounds/eda.mp3')
-    sound_promaxp = pygame.mixer.Sound('sounds/promax_cepi.mp3')
+    if player.char_type == 'Fire vizard':
+        sound_attack_1 = pygame.mixer.Sound('sounds/udarchik.mp3')
+        sound_attack_2 = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
+        sound_attack_3 = pygame.mixer.Sound('sounds/shar.mp3')
+        sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
+        sound_attack_1.set_volume(musik_efect)
+        sound_attack_2.set_volume(musik_efect)
+        sound_attack_3.set_volume(musik_efect)
+        sound_promax.set_volume(musik_efect)
+    if player2.char_type == 'Fire vizard':
+        sound_attack_1p = pygame.mixer.Sound('sounds/udarchik.mp3')
+        sound_attack_2p = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
+        sound_attack_3p = pygame.mixer.Sound('sounds/shar.mp3')
+        sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+        sound_attack_1p.set_volume(musik_efect)
+        sound_attack_2p.set_volume(musik_efect)
+        sound_attack_3p.set_volume(musik_efect)
+        sound_promaxp.set_volume(musik_efect)
 
 
-if player.char_type == 'Fire vizard':
-    sound_attack_1 = pygame.mixer.Sound('sounds/udarchik.mp3')
-    sound_attack_2 = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
-    sound_attack_3 = pygame.mixer.Sound('sounds/shar.mp3')
-    sound_attack_3.set_volume(0.2)
-    sound_promax = pygame.mixer.Sound('sounds/promoi.mp3')
-if player2.char_type == 'Fire vizard':
-    sound_attack_1p = pygame.mixer.Sound('sounds/udarchik.mp3')
-    sound_attack_2p = pygame.mixer.Sound('sounds/attack_2_nozhom.mp3')
-    sound_attack_3p = pygame.mixer.Sound('sounds/shar.mp3')
-    sound_attack_3p.set_volume(0.2)
-    sound_promaxp = pygame.mixer.Sound('sounds/promoi.mp3')
+    if player.char_type == 'Lightning Mage':
+        sound_attack_1 = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
+        sound_attack_2 = pygame.mixer.Sound('sounds/udar_mechom.mp3')
+        sound_attack_3 = pygame.mixer.Sound('sounds/shar_electro.mp3')
+        sound_promax = pygame.mixer.Sound('sounds/vazm.mp3')
+        sound_attack_1.set_volume(musik_efect)
+        sound_attack_2.set_volume(musik_efect)
+        sound_attack_3.set_volume(musik_efect)
+        sound_promax.set_volume(musik_efect)
+    if player2.char_type == 'Lightning Mage':
+        sound_attack_1p = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
+        sound_attack_2p = pygame.mixer.Sound('sounds/udar_mechom.mp3')
+        sound_attack_3p = pygame.mixer.Sound('sounds/shar_electro.mp3')
+        sound_promaxp = pygame.mixer.Sound('sounds/vazm.mp3')
+        sound_attack_1p.set_volume(musik_efect)
+        sound_attack_2p.set_volume(musik_efect)
+        sound_attack_3p.set_volume(musik_efect)
+        sound_promaxp.set_volume(musik_efect)
 
 
-if player.char_type == 'Lightning Mage':
-    sound_attack_1 = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
-    sound_attack_2 = pygame.mixer.Sound('sounds/udar_mechom.mp3')
-    sound_attack_3 = pygame.mixer.Sound('sounds/shar_electro.mp3')
-    sound_attack_3.set_volume(0.2)
-    sound_promax = pygame.mixer.Sound('sounds/vazm.mp3')
-if player2.char_type == 'Lightning Mage':
-    sound_attack_1p = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
-    sound_attack_2p = pygame.mixer.Sound('sounds/udar_mechom.mp3')
-    sound_attack_3p = pygame.mixer.Sound('sounds/shar_electro.mp3')
-    sound_attack_3p.set_volume(0.2)
-    sound_promaxp = pygame.mixer.Sound('sounds/vazm.mp3')
-if player2.char_type == 'Onre':
-    sound_attack_1p = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
-    sound_attack_2p = pygame.mixer.Sound('sounds/udar_mechom.mp3')
-    sound_promaxp = pygame.mixer.Sound('sounds/vazm.mp3')
-
-if player2.char_type == 'Gotoku':
-    sound_attack_1p = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
-    sound_attack_2p = pygame.mixer.Sound('sounds/udar_mechom.mp3')
-    sound_scream = pygame.mixer.Sound('sounds/scream_1.mp3')
-    sound_scream.set_volume(0.2)
-    sound_promaxp = pygame.mixer.Sound('sounds/vazm.mp3')
-
-if player2.char_type == 'Yurei':
-    sound_attack_1p = pygame.mixer.Sound('sounds/udar_mechom_2.mp3')
-    sound_attack_2p = pygame.mixer.Sound('sounds/udar_mechom.mp3')
-    sound_scream = pygame.mixer.Sound('sounds/scream_1.mp3')
-    sound_scream.set_volume(0.2)
-    sound_attack_3p = pygame.mixer.Sound('sounds/shar.mp3')
-    sound_attack_3p.set_volume(0.2)
-    sound_promaxp = pygame.mixer.Sound('sounds/vazm.mp3')
+    if player2.char_type == 'Onre':
+        sound_attack_1p = pygame.mixer.Sound('sounds/damage.mp3')
+        sound_attack_2p = pygame.mixer.Sound('sounds/attack_rukoi_2.mp3')
+        sound_scream = pygame.mixer.Sound('sounds/scream_1.mp3')
+        sound_scream.set_volume(musik_efect)
+        sound_promaxp = pygame.mixer.Sound('sounds/shoot.mp3')
+        sound_attack_1p.set_volume(musik_efect)
+        sound_attack_2p.set_volume(musik_efect)
+        sound_promaxp.set_volume(musik_efect)
 
 
+    if player2.char_type == 'Gotoku':
+        sound_attack_1p = pygame.mixer.Sound('sounds/damage.mp3')
+        sound_attack_2p = pygame.mixer.Sound('sounds/attack_rukoi_2.mp3')
+        sound_scream = pygame.mixer.Sound('sounds/say-3v.mp3')
+        sound_scream.set_volume(musik_efect)
+        sound_promaxp = pygame.mixer.Sound('sounds/shoot.mp3')
+        sound_attack_1p.set_volume(musik_efect)
+        sound_attack_2p.set_volume(musik_efect)
+        sound_promaxp.set_volume(musik_efect)
 
+
+    if player2.char_type == 'Yurei':
+        sound_attack_1p = pygame.mixer.Sound('sounds/damage.mp3')
+        sound_attack_2p = pygame.mixer.Sound('sounds/attack_rukoi_2.mp3')
+        sound_scream = pygame.mixer.Sound('sounds/scream_1.mp3')
+        sound_scream.set_volume(musik_efect)
+        sound_attack_3p = pygame.mixer.Sound('sounds/fireball.mp3')
+        sound_attack_3p.set_volume(musik_efect)
+        sound_promaxp = pygame.mixer.Sound('sounds/shoot.mp3')
+        sound_attack_1p.set_volume(musik_efect)
+        sound_attack_2p.set_volume(musik_efect)
+        sound_promaxp.set_volume(musik_efect)
 
 
 if player.char_type == 'Samurai_Archer':
@@ -693,7 +780,7 @@ if player2.char_type == 'Samurai_Archer':
 else:
     player2.nums = random.choice([4, 5])
 
-
+# распределение на классы игроков
 if player.char_type in ['Fighter', 'Samurai', 'Shinobi']:
     player.abil_krit = True
 elif player.char_type in ['Fire vizard', 'Lightning Mage', 'Ninja_Monk', 'Samurai_Archer']:
@@ -725,11 +812,13 @@ time4 = 0
 helth = 70
 kols = 0
 
+set_kol = 0
 kol_chhrge = True
 
 list_bulet = []
 list_bulet_2 = []
 
+# создание снарядов
 if player.char_type == 'Fire vizard':
     for i in range(1, 12):
         img = pygame.image.load(f'img/Fire vizard/bulet.png/{i}.png').convert_alpha()
@@ -752,7 +841,6 @@ elif player.char_type == 'Samurai_Archer':
     img = pygame.image.load('img/Samurai_Archer/bulet.png/1.png').convert_alpha()
     img = pygame.transform.scale(img, (100, 100))
     list_bulet.append(img)
-
 
 
 if player2.char_type == 'Fire vizard':
@@ -788,10 +876,12 @@ elif player2.char_type == 'Samurai_Archer':
     img = pygame.transform.scale(img, (100, 100))
     img = pygame.transform.flip(img, True, False)
     list_bulet_2.append(img)
+
 if wens:
     running = True
 else:
     running = False
+# главный цикл
 while running:
     if not runing_last_menu:
         status_bar()
@@ -885,6 +975,8 @@ while running:
                     if player2.hp < 80 and not player.screm_2:
                         player2.screm = True
                         time4 += 1
+                        if time4 == 1:
+                            sound_scream.play()
                         if time4 == 1000:
                             player2.screm = False
                             player.screm_2 = True
@@ -1001,6 +1093,7 @@ while running:
                             if not(keys[pygame.K_RSHIFT] and move_right_2):
                                 move_scor_2 = False
 
+            # время
             if time2 > 0:
                 if time // 4000 == 1:
                     draw_text("01:" + str(time % 3600 // 60), RED, 468, 18, 35)
@@ -1081,12 +1174,13 @@ while running:
                     player.updateds = 0
                     player2.updateds = 0
                     running = False
-
-
+        # финальное окно
         pygame.draw.rect(screen, (128, 128, 128),
                          (200, 100, 600, 400))
         pygame.draw.line(screen, YELOW, (200, 180),  (800, 180), 3)
         if player.round == 2 and player2.round == 2:
+            if name == 'Ninja_Monk':
+                name = 'Ninja Donk'
             if (player.kol_nanes_hp + player.kol_stamin + player.updateds > player2.kol_nanes_hp +
                     player2.kol_stamin + player2.updateds):
                 draw_text(f'{name} wins', YELOW, 250, 100, 70)
@@ -1096,6 +1190,15 @@ while running:
             draw_text(f'{name} wins', YELOW, 250, 100, 70)
         elif player2.round == 2:
             draw_text(f'{name1} wins', YELOW, 250, 100, 70)
+        if set_kol == 0:
+            stroka = (f'        {name}         {name1}\n'
+                      f'Damage: {player.kol_nanes_hp}           {player2.kol_nanes_hp}\n'
+                      f'Stamina: {player.kol_stamin}            {player2.kol_stamin}\n'
+                      f'Updated hp:{player.updateds}            {player2.updateds}')
+            with open('files/example.txt', 'w') as f:
+                f.write(stroka)
+                f.close()
+            set_kol += 1
         draw_text(f'{name}:', WHITE, 220, 190, 40)
         draw_text(f'Damage: {player.kol_nanes_hp}', WHITE, 220, 230, 30)
         draw_text(f'Stamina: {player.kol_stamin}', WHITE, 220, 270, 30)
@@ -1106,11 +1209,11 @@ while running:
         draw_text(f'Stamina: {player2.kol_stamin}', WHITE, 600, 270, 30)
         draw_text(f'Updated hp: {player2.updateds}', WHITE, 600, 310, 30)
 
+
         pygame.draw.rect(screen, YELOW,(320, 400, 150, 60))
         draw_text(f'Again', (128, 128, 128), 355, 405, 40)
         pygame.draw.rect(screen, YELOW,(520, 400, 150, 60))
-        draw_text(f'Menu', (128, 128, 128), 560, 405, 40)
+        draw_text(f'Exit', (128, 128, 128), 560, 405, 40)
         pygame.display.flip()
         clock.tick(FPS)
-
 pygame.quit()
