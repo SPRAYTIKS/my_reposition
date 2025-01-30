@@ -141,6 +141,7 @@ def settings(*args):
     elif count_click == 4:
         if args:
             pl1_char = args[0]
+            plaer = 0
         if mode_play:
             choice_character(2)
         else:
