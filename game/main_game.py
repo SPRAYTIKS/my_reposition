@@ -1,6 +1,33 @@
 import pygame
+import main_window
 import random
 import os
+
+
+main_window.start()
+wens = True
+while main_window.runs:
+    events = pygame.event.get()
+    for event in events:
+        if event.type == pygame.QUIT:
+            main_window.runs = False
+            wens = False
+    main_window.pygame_widgets.update(events)
+    pygame.display.flip()
+    # Обновляем громкость звуков
+    if main_window.open_settings:
+        main_window.gromkosti_m.setText(main_window.slider_m.getValue())
+        main_window.gromkosti_e.setText(main_window.slider_e.getValue())
+        # Обновляем громкость звуков
+        music_value = main_window.slider_m.getValue()
+        effects_value = main_window.slider_e.getValue()
+    if main_window.plaer != 0:
+        main_window.draw_b()
+        main_window.plaer.draw()
+        main_window.plaer.update()
+        main_window.plaer.update_action(0)
+    main_window.clock.tick(main_window.FPS)
+pygame.quit()
 
 pygame.init()
 pygame.font.init()
@@ -8,8 +35,10 @@ pygame.font.init()
 screen = pygame.display.set_mode((1000, 600))
 
 
-
-group_game = 1
+if main_window.mode_play:
+    group_game = 1
+else:
+    group_game = 2
 runing_last_menu = False
 move_left = False
 move_right = False
@@ -17,7 +46,7 @@ move_scor = False
 move_left_2 = False
 move_right_2 = False
 move_scor_2 = False
-map = 1
+map = main_window.locat
 rou = 1
 WHITE = (255, 255, 255)
 GRAVITY = 0.25
@@ -26,13 +55,13 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 YELOW = (255, 255, 0)
 BLUES = (0, 0, 255)
-if map == 1:
+if map == 0:
     map_image = pygame.image.load('map/lesik.jpg')
     map_image = pygame.transform.scale(map_image, (1000, 600))
-if map == 2:
+if map == 1:
     map_image = pygame.image.load('map/map_1.png')
     map_image = pygame.transform.scale(map_image, (1000, 600))
-if map == 3:
+if map == 2:
     map_image = pygame.image.load('map/map_2.jpg')
     map_image = pygame.transform.scale(map_image, (1000, 600))
 
@@ -511,20 +540,24 @@ class Bullet_two(pygame.sprite.Sprite):
                 self.kill()
 
 
-
+character1 = ['Fighter', 'Fire vizard', 'Kunoichi', 'Lightning Mage', 'Ninja_Monk',
+              'Samurai', 'Samurai_Archer', 'Shinobi']
+locations_map = ['Gotoku', 'Onre', 'Yurei']
 
 bulet_group = pygame.sprite.Group()
 if group_game == 2:
-    names = 'Yurei'
+    names = locations_map[main_window.locat]
 else:
-    names = 'Kunoichi'
-player = Player('Lightning Mage', 100, 450, 5, False, 0)
+    names = character1[main_window.pl2_char]
+player = Player(character1[main_window.pl1_char], 100, 450, 5, False, 0)
 player2 = Player(names, 900, 450, 5, True, 1)
 player2.direction = -1
 
 sound_attack_4 = pygame.mixer.Sound('sounds/vipusk (mp3cut.net).mp3')
 walk = pygame.mixer.Sound('sounds/shagi.mp3')
+walk.set_volume(main_window.effects_value // 100)
 jumpik = pygame.mixer.Sound('sounds/prig-s.mp3')
+jumpik.set_volume(main_window.effects_value // 100)
 
 
 if player.char_type == 'Fighter':
@@ -755,8 +788,10 @@ elif player2.char_type == 'Samurai_Archer':
     img = pygame.transform.scale(img, (100, 100))
     img = pygame.transform.flip(img, True, False)
     list_bulet_2.append(img)
-
-running = True
+if wens:
+    running = True
+else:
+    running = False
 while running:
     if not runing_last_menu:
         status_bar()
