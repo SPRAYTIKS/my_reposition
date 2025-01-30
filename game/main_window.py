@@ -2,6 +2,7 @@ import os
 import sys
 import pygame
 import pygame_widgets
+from pygame.draw import lines
 from pygame_widgets.button import Button, ButtonArray
 from pygame_widgets.slider import Slider
 from pygame_widgets.textbox import TextBox
@@ -145,11 +146,13 @@ def settings(*args):
         if mode_play:
             choice_character(2)
         else:
+            plaer = 0
             location()
     elif count_click == 5:
         if args and mode_play:
             pl2_char = args[0]
             location()
+            plaer = 0
         else:
             locat = args[0]
     elif count_click == 6:
@@ -232,11 +235,19 @@ def location():
     plaer = 0
     buttonChar.hide()
     btn_choice.hide()
-    screen.blit(fon, (0, 0))
     if mode_play:
         locations_map = ('Ominous Oaks', "Tropical Thickets", 'Twilight Forest')
+        line = 'Выберите локацию:'
     else:
         locations_map = ['Onre', 'Yurei', 'Gotoku']
+        line = 'Выберите Босса:'
+    font_35 = pygame.font.Font(None, 35)
+    text_coord = 35
+    string_rendered = font_35.render(line, 1, pygame.Color('black'))
+    intro_rect = string_rendered.get_rect()
+    intro_rect.top = text_coord - 10
+    intro_rect.x = 370
+    screen.blit(string_rendered, intro_rect)
     # for i in range(3):
     # im = pygame.Surface((180, 400))
     # pers = pygame.transform.scale(load_image('btn_3.png'), (width, height))
