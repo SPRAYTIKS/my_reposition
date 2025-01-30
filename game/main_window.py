@@ -165,6 +165,15 @@ def settings(*args):
         locat = args[0]
         runs = False
 
+class Player_second:
+    def __init__(self, image, pos):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.center = pos
+        self.is_jump = False
+        self.do = False
+        self.frease = 0
+        self.jump_count = 8
 
 def mode():
     global slider_m, slider_e, gromkosti_e, gromkosti_m, count_click, btn_1pl, btn_2pl
