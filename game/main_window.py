@@ -141,7 +141,6 @@ def settings(*args):
     elif count_click == 4:
         if args:
             pl1_char = args[0]
-            plaer = 0
         if mode_play:
             choice_character(2)
         else:
@@ -228,20 +227,23 @@ def choice_character(*args):
 
 
 def location():
-    global buttonChar, btnLocations, btn_choice, plaer
+    global buttonChar, btnLocations, btn_choice, plaer, mode_play
     plaer = 0
     buttonChar.hide()
     btn_choice.hide()
     screen.blit(fon, (0, 0))
-    locations_map = []
+    if mode_play:
+        locations_map = ('Ominous Oaks', "Tropical Thickets", 'Twilight Forest')
+    else:
+        locations_map = ['Onre', 'Yurei', 'Gotoku']
     # for i in range(3):
     # im = pygame.Surface((180, 400))
     # pers = pygame.transform.scale(load_image('btn_3.png'), (width, height))
     # im.blit(pers, (0, 0))
     # locations_map.append(im)
     btnLocations = ButtonArray(screen, 200, 50, 600, 450, (1, 3), colour=(128, 128, 128),
-                               image=locations_map,
-                               border=20, inactiveColour=(255, 255, 0),
+                               texts=locations_map,
+                               border=20,
                                onClicks=(
                                    lambda: settings(0), lambda: settings(1), lambda: settings(2)))
 
@@ -298,4 +300,3 @@ while running:
         plaer.update_action(0)
     clock.tick(FPS)
 pygame.quit()
-
